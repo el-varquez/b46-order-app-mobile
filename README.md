@@ -52,3 +52,19 @@ Shared code is reserved for behavior genuinely reused across features.
 Initial architecture scaffold only. Flutter project generation, dependencies,
 application code, platform configuration, and Phase 5 implementation have not
 started.
+
+## Quality gates
+
+The repository enforces four independent checks:
+
+- Build and Test verifies the scaffold now, then automatically runs formatting,
+  analysis, tests, and a debug Android build after `pubspec.yaml` is introduced.
+- Architecture enforces the feature shape, dependency direction, feature
+  isolation, and the declared dependency lock.
+- Conventions requires `<type>/<kebab-name>` branches and Conventional Commits.
+- Design System keeps Pop Shelf colors in canonical theme tokens once Dart
+  implementation begins.
+
+Run the local non-PR gates with `make check`. When adding `pubspec.yaml`, update
+`architecture/dependencies.json` in the same change with every direct
+dependency.

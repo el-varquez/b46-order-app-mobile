@@ -1,0 +1,39 @@
+# Flutter and Dart
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+build/
+coverage/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Generated platform files
+android/.gradle/
+android/local.properties
+android/key.properties
+android/app/upload-keystore.jks
+ios/Flutter/ephemeral/
+ios/Pods/
+ios/.symlinks/
+macos/Flutter/ephemeral/
+
+# Editors
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Operating systems
+.DS_Store
+Thumbs.db
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+*.p12
+*.mobileprovision

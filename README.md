@@ -47,13 +47,27 @@ Feature modules:
 
 Shared code is reserved for behavior genuinely reused across features.
 
+The shared component library uses [Lucide](https://lucide.dev/) icons through
+`lucide_icons_flutter`. App-authored icons belong in
+`lib/shared/components/pop_icons.dart` and screens use its `PopIcons` names;
+back navigation uses the shared `PopBackButton` chevron. Brand marks such as
+Google's “G” remain brand assets rather than Lucide icons.
+
 ## Current status
 
 Phase 5 foundation and vertical slice are implemented on Android API 26+ and
 iOS 13+. One shared login routes backend-issued Customer, Cashier, and Admin
 roles. Customer catalog/cart/checkout/status and Cashier queue/detail/status
-use the pinned backend 0.4.0 contract; Admin intentionally shows the planned
-management placeholder.
+use the backend contract; Admin intentionally shows the planned management
+placeholder. The login now offers Google and email. Email registration requests
+a six-digit code, verifies it through the backend, then stores the same B46
+access/refresh session as password or Google sign-in. The backend owns SMTP;
+the app never carries Maddy credentials.
+
+The copied registration contract is version 0.5.0 and is pinned to an
+immutable backend commit, blob, and checksum in `contracts/backend/source.json`.
+Gmail SMTP delivery remains an open backend acceptance gate: HTTP `202` only
+confirms queue handoff, not receipt of a verification email.
 
 ## Local setup and physical devices
 

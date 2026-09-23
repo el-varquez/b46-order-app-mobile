@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../app/theme/tokens.dart';
+import '../../../../shared/components/pop_icons.dart';
 import '../../../../shared/components/pop_scaffold.dart';
 import '../../domain/entities/product.dart';
 import '../cubit/catalog_cubit.dart';
@@ -30,12 +31,12 @@ class CatalogScreen extends StatelessWidget {
         IconButton(
           onPressed: onOrders,
           tooltip: 'My orders',
-          icon: const Icon(Icons.receipt_long_outlined),
+          icon: const Icon(PopIcons.orders),
         ),
         IconButton(
           onPressed: onSignOut,
           tooltip: 'Sign out',
-          icon: const Icon(Icons.logout),
+          icon: const Icon(PopIcons.signOut),
         ),
       ],
     ),
@@ -46,7 +47,7 @@ class CatalogScreen extends StatelessWidget {
         child: FilledButton.icon(
           key: const Key('view-cart'),
           onPressed: onCart,
-          icon: const Icon(Icons.shopping_bag_outlined),
+          icon: const Icon(PopIcons.basket),
           label: Text(
             cartCount == 0
                 ? 'Your basket'
@@ -215,9 +216,9 @@ class ProductCard extends StatelessWidget {
 
   IconData _categoryIcon(String category) {
     final value = category.toLowerCase();
-    if (value.contains('drink')) return Icons.local_drink_outlined;
-    if (value.contains('pantry')) return Icons.breakfast_dining_outlined;
-    return Icons.shopping_basket_outlined;
+    if (value.contains('drink')) return PopIcons.drink;
+    if (value.contains('pantry')) return PopIcons.pantry;
+    return PopIcons.groceries;
   }
 }
 

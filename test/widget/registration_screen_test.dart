@@ -193,6 +193,8 @@ void main() {
   testWidgets('registration rejects an email without a domain dot locally', (
     tester,
   ) async {
+    await tester.binding.setSurfaceSize(const Size(360, 760));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     final repository = _RegistrationRepository();
     final cubit = RegistrationCubit(
       begin: BeginRegistration(repository),

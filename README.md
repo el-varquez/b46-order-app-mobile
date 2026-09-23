@@ -36,7 +36,7 @@ Screens invoke Cubits, Cubits invoke use cases, and use cases depend on domain
 repository interfaces. Data adapters implement those interfaces. Domain code
 must not import Flutter, HTTP, storage, or vendor packages.
 
-Planned feature modules:
+Feature modules:
 
 - authentication
 - catalog
@@ -49,22 +49,85 @@ Shared code is reserved for behavior genuinely reused across features.
 
 ## Current status
 
-Initial architecture scaffold only. Flutter project generation, dependencies,
-application code, platform configuration, and Phase 5 implementation have not
-started.
+Phase 5 foundation and vertical slice are implemented on Android API 26+ and
+iOS 13+. One shared login routes backend-issued Customer, Cashier, and Admin
+roles. Customer catalog/cart/checkout/status and Cashier queue/detail/status
+use the pinned backend 0.4.0 contract; Admin intentionally shows the planned
+management placeholder.
+
+## Local setup and physical devices
+
+Restore the shared Flutter dependencies on any development machine:
+
+```text
+make dependencies
+```
+
+List connected phones and inspect the Flutter toolchain when needed:
+
+```text
+make devices
+make doctor
+```
+
+### Android phone
+
+Enable USB debugging, connect the phone, and run:
+
+```text
+make run-android DEVICE=<android-device-id>
+```
+
+The command forwards device port `8080` to the development machine, allowing
+the app to reach a locally running backend. Use `BACKEND_PORT=<port>` when the
+backend is not running on `8080`.
+
+### iOS collaborator
+
+The Mac must already have Flutter, Xcode, and the Xcode command-line tools.
+After cloning, prepare all Flutter and iOS dependencies with one command:
+
+```text
+make setup-ios
+```
+
+This enables Flutter Swift Package Manager integration, downloads the iOS
+engine artifacts, and restores Dart/plugin dependencies. This project does not
+require a manual CocoaPods installation step.
+
+To compile and run on a connected iPhone:
+
+```text
+make run-ios DEVICE=<iphone-device-id> API_BASE_URL=http://<mac-lan-ip>:8080
+```
+
+The iPhone and Mac must both be able to reach that backend address. When only
+one supported phone is connected, `DEVICE` may be omitted. `make run` and
+`make debug` are equivalent generic debug commands.
+
+Build an Android debug APK without launching the application:
+
+```text
+make debug-apk
+```
 
 ## Quality gates
 
-The repository enforces four independent checks:
+The repository enforces five independent checks:
 
-- Build and Test verifies the scaffold now, then automatically runs formatting,
-  analysis, tests, and a debug Android build after `pubspec.yaml` is introduced.
+- Build and Test restores locked dependencies, verifies formatting, runs static
+  analysis and tests, and builds a debug Android APK.
 - Architecture enforces the feature shape, dependency direction, feature
   isolation, and the declared dependency lock.
 - Conventions requires `<type>/<kebab-name>` branches and Conventional Commits.
-- Design System keeps Pop Shelf colors in canonical theme tokens once Dart
-  implementation begins.
+- Design System keeps Pop Shelf colors in canonical theme tokens.
+- Contract Pin verifies that the copied backend OpenAPI artifact has not
+  drifted from its recorded checksum.
 
-Run the local non-PR gates with `make check`. When adding `pubspec.yaml`, update
-`architecture/dependencies.json` in the same change with every direct
-dependency.
+Run the local non-PR gates with `make check`. Update
+`architecture/dependencies.json` in the same change whenever a direct
+dependency changes.
+
+See `b46-ordering-app/docs/mobile-development.md` in the shared planning
+workspace for local backend URLs, Dart defines, OAuth credential setup, and
+the two-account walkthrough.

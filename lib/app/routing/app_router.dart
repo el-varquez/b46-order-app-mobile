@@ -1,0 +1,297 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../features/admin_cashier_management/presentation/screens/admin_placeholder_screen.dart';
+import '../../features/authentication/domain/entities/session.dart';
+import '../../features/authentication/presentation/cubit/session_cubit.dart';
+import '../../features/authentication/presentation/screens/login_screen.dart';
+import '../../features/cart_checkout/domain/entities/cart.dart';
+import '../../features/cart_checkout/presentation/cubit/cart_cubit.dart';
+import '../../features/cart_checkout/presentation/screens/checkout_screen.dart';
+import '../../features/cashier_fulfillment/presentation/screens/cashier_screens.dart';
+import '../../features/catalog/domain/entities/product.dart';
+import '../../features/catalog/presentation/screens/catalog_screen.dart';
+import '../../features/customer_orders/domain/entities/customer_order.dart';
+import '../../features/customer_orders/presentation/cubit/customer_orders_cubit.dart';
+import '../../features/customer_orders/presentation/screens/customer_orders_screen.dart';
+import '../../shared/components/pop_scaffold.dart';
+import '../bootstrap/dependencies.dart';
+
+GoRouter createRouter(AppDependencies dependencies, VoidCallback toggleTheme) {
+  final refresh = _CubitRefresh(dependencies.session.stream);
+  return GoRouter(
+    initialLocation: '/splash',
+    refreshListenable: refresh,
+    redirect: (context, state) {
+      final session = dependencies.session.state;
+      final location = state.matchedLocation;
+      if (session.status == SessionStatus.restoring) {
+        return location == '/splash' ? null : '/splash';
+      }
+      final loginArea = location.startsWith('/login');
+      if (session.status != SessionStatus.authenticated) {
+        return loginArea ? null : '/login';
+      }
+      final role = session.session!.user.role;
+      final home = homeForRole(role);
+      if (location == '/splash' || loginArea) return home;
+      if (!allowedForRole(role, location)) return home;
+      return null;
+    },
+    routes: [
+      GoRoute(path: '/splash', builder: (_, _) => const _SplashScreen()),
+      GoRoute(
+        path: '/login',
+        builder: (context, _) => LoginScreen(
+          onEmail: () => context.go('/login/email'),
+          onToggleTheme: toggleTheme,
+        ),
+      ),
+      GoRoute(
+        path: '/login/email',
+        builder: (context, _) => EmailScreen(
+          onContinue: (email) => context.go(
+            '/login/password?email=${Uri.encodeQueryComponent(email)}',
+          ),
+        ),
+      ),
+      GoRoute(
+        path: '/login/password',
+        builder: (_, state) =>
+            PasswordScreen(email: state.uri.queryParameters['email'] ?? ''),
+      ),
+      GoRoute(
+        path: '/shop',
+        builder: (_, _) => _CustomerCatalogRoute(dependencies: dependencies),
+      ),
+      GoRoute(
+        path: '/checkout',
+        builder: (_, _) => _CheckoutRoute(dependencies: dependencies),
+      ),
+      GoRoute(
+        path: '/orders',
+        builder: (_, _) => _CustomerOrdersRoute(dependencies: dependencies),
+        routes: [
+          GoRoute(
+            path: ':orderId',
+            builder: (_, state) => _CustomerOrderRoute(
+              dependencies: dependencies,
+              orderId: state.pathParameters['orderId']!,
+            ),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/staff/orders',
+        builder: (_, _) => _CashierOrdersRoute(dependencies: dependencies),
+        routes: [
+          GoRoute(
+            path: ':orderId',
+            builder: (_, state) {
+              final id = state.pathParameters['orderId']!;
+              return BlocProvider(
+                create: (_) => dependencies.cashierOrderDetails()..load(id),
+                child: const CashierOrderDetailScreen(),
+              );
+            },
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/admin',
+        builder: (_, _) =>
+            AdminPlaceholderScreen(onSignOut: dependencies.session.logout),
+      ),
+    ],
+  );
+}
+
+String homeForRole(UserRole role) => switch (role) {
+  UserRole.customer => '/shop',
+  UserRole.cashier => '/staff/orders',
+  UserRole.admin => '/admin',
+};
+
+bool allowedForRole(UserRole role, String location) => switch (role) {
+  UserRole.customer =>
+    location == '/shop' ||
+        location == '/checkout' ||
+        location.startsWith('/orders'),
+  UserRole.cashier => location.startsWith('/staff/orders'),
+  UserRole.admin => location == '/admin',
+};
+
+final class _CubitRefresh extends ChangeNotifier {
+  _CubitRefresh(Stream<Object?> stream) {
+    _subscription = stream.listen((_) => notifyListeners());
+  }
+  late final StreamSubscription<Object?> _subscription;
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+}
+
+class _SplashScreen extends StatelessWidget {
+  const _SplashScreen();
+  @override
+  Widget build(BuildContext context) => const PopScaffold(
+    child: Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          B46Mark(large: true),
+          SizedBox(height: 24),
+          CircularProgressIndicator(),
+        ],
+      ),
+    ),
+  );
+}
+
+class _CustomerCatalogRoute extends StatefulWidget {
+  const _CustomerCatalogRoute({required this.dependencies});
+  final AppDependencies dependencies;
+  @override
+  State<_CustomerCatalogRoute> createState() => _CustomerCatalogRouteState();
+}
+
+class _CustomerCatalogRouteState extends State<_CustomerCatalogRoute> {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.dependencies.catalog.state.products.isEmpty) {
+      widget.dependencies.catalog.load();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => BlocBuilder<CartCubit, CartState>(
+    builder: (context, cart) => CatalogScreen(
+      cartCount: cart.itemCount,
+      onAdd: (Product product) => context.read<CartCubit>().add(
+        CartProduct(
+          id: product.id,
+          name: product.name,
+          unitPriceCentavos: product.priceCentavos,
+        ),
+      ),
+      onCart: () => context.go('/checkout'),
+      onOrders: () => context.go('/orders'),
+      onSignOut: widget.dependencies.session.logout,
+    ),
+  );
+}
+
+class _CheckoutRoute extends StatelessWidget {
+  const _CheckoutRoute({required this.dependencies});
+  final AppDependencies dependencies;
+  @override
+  Widget build(BuildContext context) =>
+      BlocBuilder<CustomerOrdersCubit, CustomerOrdersState>(
+        builder: (context, orderState) => CheckoutScreen(
+          placing: orderState.status == CustomerOrdersStatus.placing,
+          message: orderState.status == CustomerOrdersStatus.failure
+              ? orderState.message
+              : null,
+          onPlace: (address, notes) async {
+            final cart = context.read<CartCubit>().state;
+            final order = await context.read<CustomerOrdersCubit>().place(
+              lines: cart.lines
+                  .map(
+                    (line) => CheckoutLine(
+                      productId: line.product.id,
+                      quantity: line.quantity,
+                      expectedUnitPriceCentavos: line.product.unitPriceCentavos,
+                    ),
+                  )
+                  .toList(growable: false),
+              deliveryAddress: address,
+              deliveryNotes: notes,
+            );
+            if (order != null && context.mounted) {
+              context.go('/orders/${order.id}');
+            }
+          },
+        ),
+      );
+}
+
+class _CustomerOrdersRoute extends StatefulWidget {
+  const _CustomerOrdersRoute({required this.dependencies});
+  final AppDependencies dependencies;
+  @override
+  State<_CustomerOrdersRoute> createState() => _CustomerOrdersRouteState();
+}
+
+class _CustomerOrdersRouteState extends State<_CustomerOrdersRoute> {
+  @override
+  void initState() {
+    super.initState();
+    widget.dependencies.customerOrders.loadAll();
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      CustomerOrdersScreen(onOpen: (id) => context.go('/orders/$id'));
+}
+
+class _CustomerOrderRoute extends StatefulWidget {
+  const _CustomerOrderRoute({
+    required this.dependencies,
+    required this.orderId,
+  });
+  final AppDependencies dependencies;
+  final String orderId;
+
+  @override
+  State<_CustomerOrderRoute> createState() => _CustomerOrderRouteState();
+}
+
+class _CustomerOrderRouteState extends State<_CustomerOrderRoute> {
+  @override
+  void initState() {
+    super.initState();
+    final state = widget.dependencies.customerOrders.state;
+    final known =
+        state.active?.id == widget.orderId ||
+        state.orders.any((order) => order.id == widget.orderId);
+    if (!known) widget.dependencies.customerOrders.loadAll();
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      CustomerOrderStatusScreen(orderId: widget.orderId);
+}
+
+class _CashierOrdersRoute extends StatefulWidget {
+  const _CashierOrdersRoute({required this.dependencies});
+  final AppDependencies dependencies;
+  @override
+  State<_CashierOrdersRoute> createState() => _CashierOrdersRouteState();
+}
+
+class _CashierOrdersRouteState extends State<_CashierOrdersRoute> {
+  @override
+  void initState() {
+    super.initState();
+    widget.dependencies.cashierOrders.load();
+    widget.dependencies.cashierOrders.startPolling();
+  }
+
+  @override
+  void dispose() {
+    widget.dependencies.cashierOrders.stopPolling();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => CashierOrdersScreen(
+    onOpen: (id) => context.go('/staff/orders/$id'),
+    onSignOut: widget.dependencies.session.logout,
+  );
+}

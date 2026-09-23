@@ -73,9 +73,8 @@ GoRouter createRouter(AppDependencies dependencies, VoidCallback toggleTheme) {
       ),
       GoRoute(
         path: '/login/verify',
-        builder: (context, _) => VerifyEmailScreen(
-          onChangeEmail: () => context.pop(),
-        ),
+        builder: (context, _) =>
+            VerifyEmailScreen(onChangeEmail: () => context.pop()),
       ),
       GoRoute(
         path: '/shop',
@@ -102,9 +101,8 @@ GoRouter createRouter(AppDependencies dependencies, VoidCallback toggleTheme) {
       ),
       GoRoute(
         path: '/staff/orders',
-        builder: (_, _) => _ExitOnBack(
-          child: _CashierOrdersRoute(dependencies: dependencies),
-        ),
+        builder: (_, _) =>
+            _ExitOnBack(child: _CashierOrdersRoute(dependencies: dependencies)),
         routes: [
           GoRoute(
             path: ':orderId',
@@ -121,9 +119,7 @@ GoRouter createRouter(AppDependencies dependencies, VoidCallback toggleTheme) {
       GoRoute(
         path: '/admin',
         builder: (_, _) => _ExitOnBack(
-          child: AdminPlaceholderScreen(
-            onSignOut: dependencies.session.logout,
-          ),
+          child: AdminPlaceholderScreen(onSignOut: dependencies.session.logout),
         ),
       ),
     ],

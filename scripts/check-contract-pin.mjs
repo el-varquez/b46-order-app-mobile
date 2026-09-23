@@ -10,7 +10,9 @@ const sourcePath = join(root, 'contracts', 'backend', 'source.json');
 const bytes = readFileSync(contractPath);
 const contract = JSON.parse(bytes);
 const source = JSON.parse(readFileSync(sourcePath, 'utf8'));
-const digest = createHash('sha256').update(bytes).digest('hex');
+// Git normalizes this text artifact to LF, while Windows may check it out as CRLF.
+const canonicalBytes = Buffer.from(bytes.toString('utf8').replaceAll('\r\n', '\n'));
+const digest = createHash('sha256').update(canonicalBytes).digest('hex');
 const failures = [];
 
 if (contract.openapi !== '3.1.1') failures.push('backend contract must use OpenAPI 3.1.1');

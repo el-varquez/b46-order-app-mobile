@@ -63,6 +63,7 @@ class _B46AppState extends State<B46App> with WidgetsBindingObserver {
   Widget build(BuildContext context) => MultiBlocProvider(
     providers: [
       BlocProvider.value(value: widget.dependencies.session),
+      BlocProvider.value(value: widget.dependencies.registration),
       BlocProvider.value(value: widget.dependencies.theme),
       BlocProvider.value(value: widget.dependencies.catalog),
       BlocProvider.value(value: widget.dependencies.cart),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/tokens.dart';
+import '../../../../shared/components/pop_icons.dart';
 import '../../../../shared/components/pop_scaffold.dart';
 
 class AdminPlaceholderScreen extends StatelessWidget {
@@ -12,7 +13,7 @@ class AdminPlaceholderScreen extends StatelessWidget {
     appBar: AppBar(
       title: const Text('Admin'),
       actions: [
-        IconButton(onPressed: onSignOut, icon: const Icon(Icons.logout)),
+        IconButton(onPressed: onSignOut, icon: const Icon(PopIcons.signOut)),
       ],
     ),
     child: const Padding(

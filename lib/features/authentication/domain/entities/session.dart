@@ -1,6 +1,6 @@
 enum UserRole { customer, cashier, admin }
 
-enum OAuthProvider { google, apple }
+enum OAuthProvider { google }
 
 final class AppUser {
   const AppUser({

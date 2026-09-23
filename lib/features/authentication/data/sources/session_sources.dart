@@ -1,5 +1,3 @@
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-
 import '../../../../core/errors/app_failure.dart';
 import '../../../../core/networking/json_http_client.dart';
 import '../../../../core/storage/secure_key_value_store.dart';
@@ -18,6 +16,50 @@ final class SessionRemoteSource {
     );
     return SessionModel.fromData(response['data'] as Map<String, dynamic>)
         .session;
+  }
+
+  Future<({String registrationId, DateTime expiresAt})> beginRegistration(
+    String name,
+    String email,
+    String password,
+  ) async {
+    final response = await _http.request(
+      'POST',
+      '/v1/auth/password/registrations',
+      body: {'name': name.trim(), 'email': email.trim(), 'password': password},
+    );
+    return registrationAttempt(response);
+  }
+
+  Future<({String registrationId, DateTime expiresAt})> resendRegistration(
+    String id,
+  ) async {
+    final response = await _http.request(
+      'POST',
+      '/v1/auth/password/registrations/resend',
+      body: {'registration_id': id},
+    );
+    return registrationAttempt(response);
+  }
+
+  Future<Session> verifyRegistration(String id, String code) async {
+    final response = await _http.request(
+      'POST',
+      '/v1/auth/password/registrations/verify',
+      body: {'registration_id': id, 'code': code},
+    );
+    return SessionModel.fromData(response['data'] as Map<String, dynamic>)
+        .session;
+  }
+
+  ({String registrationId, DateTime expiresAt}) registrationAttempt(
+    Map<String, dynamic> response,
+  ) {
+    final data = response['data'] as Map<String, dynamic>;
+    return (
+      registrationId: data['registration_id'] as String,
+      expiresAt: DateTime.parse(data['expires_at'] as String),
+    );
   }
 
   Future<({String intentId, String nonce})> createOAuthIntent(
@@ -129,27 +171,6 @@ final class GoogleCredentialSource implements OAuthCredentialSource {
 
   @override
   Future<void> clearProviderSession() => _native.signOut();
-}
-
-final class AppleCredentialSource implements OAuthCredentialSource {
-  @override
-  Future<String> credential({required String nonce}) async {
-    final credential = await SignInWithApple.getAppleIDCredential(
-      scopes: const [
-        AppleIDAuthorizationScopes.email,
-        AppleIDAuthorizationScopes.fullName,
-      ],
-      nonce: nonce,
-    );
-    final token = credential.identityToken;
-    if (token == null || token.isEmpty) {
-      throw const FormatException('Apple returned no identity token.');
-    }
-    return token;
-  }
-
-  @override
-  Future<void> clearProviderSession() async {}
 }
 
 final class SessionLocalSource {

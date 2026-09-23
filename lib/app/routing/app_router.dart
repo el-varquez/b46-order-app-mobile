@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -8,6 +9,7 @@ import '../../features/admin_cashier_management/presentation/screens/admin_place
 import '../../features/authentication/domain/entities/session.dart';
 import '../../features/authentication/presentation/cubit/session_cubit.dart';
 import '../../features/authentication/presentation/screens/login_screen.dart';
+import '../../features/authentication/presentation/screens/registration_screens.dart';
 import '../../features/cart_checkout/domain/entities/cart.dart';
 import '../../features/cart_checkout/presentation/cubit/cart_cubit.dart';
 import '../../features/cart_checkout/presentation/screens/checkout_screen.dart';
@@ -42,30 +44,43 @@ GoRouter createRouter(AppDependencies dependencies, VoidCallback toggleTheme) {
       return null;
     },
     routes: [
-      GoRoute(path: '/splash', builder: (_, _) => const _SplashScreen()),
       GoRoute(
-        path: '/login',
-        builder: (context, _) => LoginScreen(
-          onEmail: () => context.go('/login/email'),
-          onToggleTheme: toggleTheme,
-        ),
+        path: '/splash',
+        builder: (_, _) => const _ExitOnBack(child: _SplashScreen()),
       ),
       GoRoute(
-        path: '/login/email',
-        builder: (context, _) => EmailScreen(
-          onContinue: (email) => context.go(
-            '/login/password?email=${Uri.encodeQueryComponent(email)}',
+        path: '/login',
+        builder: (context, _) => _ExitOnBack(
+          child: LoginScreen(
+            onEmail: () => context.push('/login/email'),
+            onToggleTheme: toggleTheme,
           ),
         ),
       ),
       GoRoute(
-        path: '/login/password',
-        builder: (_, state) =>
-            PasswordScreen(email: state.uri.queryParameters['email'] ?? ''),
+        path: '/login/email',
+        builder: (context, _) => EmailLoginScreen(
+          onRegister: (email) {
+            dependencies.registration.prefillEmail(email);
+            context.push('/login/register');
+          },
+        ),
+      ),
+      GoRoute(
+        path: '/login/register',
+        builder: (context, _) =>
+            RegistrationScreen(onStarted: () => context.push('/login/verify')),
+      ),
+      GoRoute(
+        path: '/login/verify',
+        builder: (context, _) =>
+            VerifyEmailScreen(onChangeEmail: () => context.pop()),
       ),
       GoRoute(
         path: '/shop',
-        builder: (_, _) => _CustomerCatalogRoute(dependencies: dependencies),
+        builder: (_, _) => _ExitOnBack(
+          child: _CustomerCatalogRoute(dependencies: dependencies),
+        ),
       ),
       GoRoute(
         path: '/checkout',
@@ -86,7 +101,8 @@ GoRouter createRouter(AppDependencies dependencies, VoidCallback toggleTheme) {
       ),
       GoRoute(
         path: '/staff/orders',
-        builder: (_, _) => _CashierOrdersRoute(dependencies: dependencies),
+        builder: (_, _) =>
+            _ExitOnBack(child: _CashierOrdersRoute(dependencies: dependencies)),
         routes: [
           GoRoute(
             path: ':orderId',
@@ -102,10 +118,50 @@ GoRouter createRouter(AppDependencies dependencies, VoidCallback toggleTheme) {
       ),
       GoRoute(
         path: '/admin',
-        builder: (_, _) =>
-            AdminPlaceholderScreen(onSignOut: dependencies.session.logout),
+        builder: (_, _) => _ExitOnBack(
+          child: AdminPlaceholderScreen(onSignOut: dependencies.session.logout),
+        ),
       ),
     ],
+  );
+}
+
+class _ExitOnBack extends StatefulWidget {
+  const _ExitOnBack({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_ExitOnBack> createState() => _ExitOnBackState();
+}
+
+class _ExitOnBackState extends State<_ExitOnBack> {
+  DateTime? lastBackAt;
+
+  @override
+  Widget build(BuildContext context) => PopScope(
+    canPop: false,
+    onPopInvokedWithResult: (didPop, _) {
+      if (didPop) return;
+
+      final now = DateTime.now();
+      if (lastBackAt != null &&
+          now.difference(lastBackAt!) < const Duration(seconds: 2)) {
+        SystemNavigator.pop();
+        return;
+      }
+
+      lastBackAt = now;
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Press back again to exit'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    },
+    child: widget.child,
   );
 }
 
@@ -180,8 +236,8 @@ class _CustomerCatalogRouteState extends State<_CustomerCatalogRoute> {
           unitPriceCentavos: product.priceCentavos,
         ),
       ),
-      onCart: () => context.go('/checkout'),
-      onOrders: () => context.go('/orders'),
+      onCart: () => context.push('/checkout'),
+      onOrders: () => context.push('/orders'),
       onSignOut: widget.dependencies.session.logout,
     ),
   );
@@ -214,7 +270,7 @@ class _CheckoutRoute extends StatelessWidget {
               deliveryNotes: notes,
             );
             if (order != null && context.mounted) {
-              context.go('/orders/${order.id}');
+              context.pushReplacement('/orders/${order.id}');
             }
           },
         ),
@@ -237,7 +293,7 @@ class _CustomerOrdersRouteState extends State<_CustomerOrdersRoute> {
 
   @override
   Widget build(BuildContext context) =>
-      CustomerOrdersScreen(onOpen: (id) => context.go('/orders/$id'));
+      CustomerOrdersScreen(onOpen: (id) => context.push('/orders/$id'));
 }
 
 class _CustomerOrderRoute extends StatefulWidget {
@@ -291,7 +347,7 @@ class _CashierOrdersRouteState extends State<_CashierOrdersRoute> {
 
   @override
   Widget build(BuildContext context) => CashierOrdersScreen(
-    onOpen: (id) => context.go('/staff/orders/$id'),
+    onOpen: (id) => context.push('/staff/orders/$id'),
     onSignOut: widget.dependencies.session.logout,
   );
 }

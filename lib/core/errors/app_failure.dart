@@ -7,6 +7,8 @@ enum FailureCode {
   identityLinkRequired,
   invalidOAuthCredential,
   invalidOAuthIntent,
+  invalidRegistration,
+  registrationRateLimited,
   cartChanged,
   snapshotExpired,
   invalidTransition,

@@ -2,9 +2,11 @@ import '../../../../core/errors/app_failure.dart';
 import '../../../../core/networking/session_access.dart';
 import '../../domain/entities/session.dart';
 import '../../domain/repositories/session_repository.dart';
+import '../../domain/repositories/registration_repository.dart';
 import '../sources/session_sources.dart';
 
-final class SessionRepositoryImpl implements SessionRepository {
+final class SessionRepositoryImpl
+    implements SessionRepository, RegistrationRepository {
   SessionRepositoryImpl({
     required SessionRemoteSource remote,
     required SessionLocalSource local,
@@ -73,6 +75,35 @@ final class SessionRepositoryImpl implements SessionRepository {
   @override
   Future<Session> loginWithPassword(String email, String password) async {
     final session = await _remote.passwordLogin(email, password);
+    await _save(session);
+    return session;
+  }
+
+  @override
+  Future<RegistrationAttempt> beginRegistration(
+    String name,
+    String email,
+    String password,
+  ) async {
+    final result = await _remote.beginRegistration(name, email, password);
+    return RegistrationAttempt(
+      id: result.registrationId,
+      expiresAt: result.expiresAt,
+    );
+  }
+
+  @override
+  Future<RegistrationAttempt> resendRegistration(String id) async {
+    final result = await _remote.resendRegistration(id);
+    return RegistrationAttempt(
+      id: result.registrationId,
+      expiresAt: result.expiresAt,
+    );
+  }
+
+  @override
+  Future<Session> verifyRegistration(String id, String code) async {
+    final session = await _remote.verifyRegistration(id, code);
     await _save(session);
     return session;
   }

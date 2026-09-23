@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../app/theme/tokens.dart';
+import '../../../../shared/components/pop_icons.dart';
 import '../../../../shared/components/pop_scaffold.dart';
 import '../cubit/cart_cubit.dart';
 
@@ -34,7 +35,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) => PopScaffold(
-    appBar: AppBar(title: const Text('Review basket')),
+    appBar: AppBar(
+      leading: const PopBackButton(),
+      title: const Text('Review basket'),
+    ),
     child: BlocBuilder<CartCubit, CartState>(
       builder: (context, cart) => ListView(
         padding: const EdgeInsets.all(PopSpace.md),
@@ -67,7 +71,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             onPressed: () => context.read<CartCubit>().remove(
                               line.product.id,
                             ),
-                            icon: const Icon(Icons.delete_outline),
+                            icon: const Icon(PopIcons.remove),
                           ),
                         ],
                       ),
@@ -80,14 +84,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             onPressed: () => context
                                 .read<CartCubit>()
                                 .decrement(line.product.id),
-                            icon: const Icon(Icons.remove_circle_outline),
+                            icon: const Icon(PopIcons.decrease),
                           ),
                           Text('${line.quantity}'),
                           IconButton(
                             tooltip: 'Increase quantity',
                             onPressed: () =>
                                 context.read<CartCubit>().add(line.product),
-                            icon: const Icon(Icons.add_circle_outline),
+                            icon: const Icon(PopIcons.increase),
                           ),
                           const Spacer(),
                           Text(

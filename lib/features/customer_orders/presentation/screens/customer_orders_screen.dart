@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../app/theme/tokens.dart';
+import '../../../../shared/components/pop_icons.dart';
 import '../../../../shared/components/pop_scaffold.dart';
 import '../../domain/entities/customer_order.dart';
 import '../cubit/customer_orders_cubit.dart';
@@ -12,7 +13,10 @@ class CustomerOrdersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => PopScaffold(
-    appBar: AppBar(title: const Text('My orders')),
+    appBar: AppBar(
+      leading: const PopBackButton(),
+      title: const Text('My orders'),
+    ),
     child: BlocBuilder<CustomerOrdersCubit, CustomerOrdersState>(
       builder: (context, state) {
         if (state.status == CustomerOrdersStatus.loading &&
@@ -47,7 +51,7 @@ class CustomerOrdersScreen extends StatelessWidget {
                   subtitle: Text(
                     '${order.lines.length} item${order.lines.length == 1 ? '' : 's'} · ${_money(order.totalCentavos)}',
                   ),
-                  trailing: const Icon(Icons.chevron_right),
+                  trailing: const Icon(PopIcons.forward),
                 ),
               );
             },
@@ -64,7 +68,10 @@ class CustomerOrderStatusScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => PopScaffold(
-    appBar: AppBar(title: const Text('Order status')),
+    appBar: AppBar(
+      leading: const PopBackButton(),
+      title: const Text('Order status'),
+    ),
     child: BlocBuilder<CustomerOrdersCubit, CustomerOrdersState>(
       builder: (context, state) {
         final order = state.active?.id == orderId
@@ -138,10 +145,10 @@ String _message(CustomerOrderStatus status) => switch (status) {
 };
 
 IconData _icon(CustomerOrderStatus status) => switch (status) {
-  CustomerOrderStatus.preparing => Icons.inventory_2_outlined,
-  CustomerOrderStatus.onTheWay => Icons.delivery_dining,
-  CustomerOrderStatus.delivered => Icons.check_circle_outline,
-  CustomerOrderStatus.rejected => Icons.remove_shopping_cart_outlined,
+  CustomerOrderStatus.preparing => PopIcons.preparing,
+  CustomerOrderStatus.onTheWay => PopIcons.delivering,
+  CustomerOrderStatus.delivered => PopIcons.delivered,
+  CustomerOrderStatus.rejected => PopIcons.rejected,
 };
 
 String _money(int centavos) => '₱${(centavos / 100).toStringAsFixed(2)}';

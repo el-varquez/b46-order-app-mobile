@@ -34,6 +34,8 @@ void main() {
         );
         await tester.pump();
         expect(find.text('Continue with Google'), findsOneWidget);
+        expect(find.text('Continue with email'), findsOneWidget);
+        expect(find.text('Continue with Apple'), findsNothing);
         expect(tester.takeException(), isNull);
       }
       await cubit.close();

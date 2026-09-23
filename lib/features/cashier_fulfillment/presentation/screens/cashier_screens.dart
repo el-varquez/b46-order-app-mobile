@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../app/theme/tokens.dart';
+import '../../../../shared/components/pop_icons.dart';
 import '../../../../shared/components/pop_scaffold.dart';
 import '../../domain/entities/cashier_order.dart';
 import '../cubit/cashier_orders_cubit.dart';
@@ -20,7 +21,7 @@ class CashierOrdersScreen extends StatelessWidget {
     appBar: AppBar(
       title: const Text('Orders'),
       actions: [
-        IconButton(onPressed: onSignOut, icon: const Icon(Icons.logout)),
+        IconButton(onPressed: onSignOut, icon: const Icon(PopIcons.signOut)),
       ],
     ),
     child: BlocBuilder<CashierOrdersCubit, CashierOrdersState>(
@@ -47,9 +48,9 @@ class CashierOrdersScreen extends StatelessWidget {
                   leading: order.unread
                       ? const Badge(
                           label: Text('New'),
-                          child: Icon(Icons.receipt_long),
+                          child: Icon(PopIcons.orders),
                         )
-                      : const Icon(Icons.receipt_long),
+                      : const Icon(PopIcons.orders),
                   title: Text(
                     order.customerName,
                     style: const TextStyle(fontWeight: FontWeight.w900),
@@ -57,7 +58,7 @@ class CashierOrdersScreen extends StatelessWidget {
                   subtitle: Text(
                     '${_status(order.status)} · ${order.lines.length} items',
                   ),
-                  trailing: const Icon(Icons.chevron_right),
+                  trailing: const Icon(PopIcons.forward),
                 ),
               );
             },
@@ -77,7 +78,10 @@ class CashierOrderDetailScreen extends StatelessWidget {
         builder: (context, state) {
           final order = state.order;
           return PopScaffold(
-            appBar: AppBar(title: const Text('Order details')),
+            appBar: AppBar(
+              leading: const PopBackButton(),
+              title: const Text('Order details'),
+            ),
             bottomNavigationBar: order?.nextAction == null
                 ? null
                 : SafeArea(

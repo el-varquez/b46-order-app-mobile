@@ -13,14 +13,22 @@ const source = JSON.parse(readFileSync(sourcePath, 'utf8'));
 // Git normalizes this text artifact to LF, while Windows may check it out as CRLF.
 const canonicalBytes = Buffer.from(bytes.toString('utf8').replaceAll('\r\n', '\n'));
 const digest = createHash('sha256').update(canonicalBytes).digest('hex');
+const blob = createHash('sha1').update(`blob ${canonicalBytes.length}\0`).update(canonicalBytes).digest('hex');
 const failures = [];
 
 if (contract.openapi !== '3.1.1') failures.push('backend contract must use OpenAPI 3.1.1');
 if (contract.info?.version !== source.openapi_version) failures.push('OpenAPI version does not match source.json');
 if (digest !== source.sha256) failures.push('OpenAPI SHA-256 does not match source.json');
-if (!source.source_contract_blob || source.source_contract_blob.length !== 40) failures.push('source contract blob is missing');
+if (blob !== source.source_contract_blob) failures.push('source contract blob does not match the pinned OpenAPI');
 if (!/^[0-9a-f]{40}$/.test(source.source_commit ?? '')) failures.push('source commit must be an immutable Git SHA');
 if (!contract.paths?.['/v1/products']?.get) failures.push('pinned contract is missing GET /v1/products');
+for (const path of [
+  '/v1/auth/password/registrations',
+  '/v1/auth/password/registrations/resend',
+  '/v1/auth/password/registrations/verify',
+]) {
+  if (!contract.paths?.[path]?.post) failures.push(`pinned contract is missing POST ${path}`);
+}
 
 if (failures.length > 0) {
   console.error('check:contract-pin FAILED\n');

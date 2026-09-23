@@ -1,9 +1,9 @@
 {
   "repository": "github.com/el-varquez/b46-ordering-app-backend",
-  "openapi_version": "0.4.0",
-  "source_branch": "feat/phase-5-mobile-contract",
-  "source_base_commit": "ab852440cdcf916cd15360150b76293199883111",
-  "source_contract_blob": "d0814203aa292b54ea18c6a108a145e9a4b46575",
-  "source_commit": "47d047230c211cf38aa61795cd0111d89ea9f870",
-  "sha256": "50f22e541bef7a521f95403eb0329a96a12945948df732f037be804f4a0b812f"
+  "openapi_version": "0.5.0",
+  "source_branch": "feat/phase-5-email-registration",
+  "source_base_commit": "7457a4cd370baa170f478dba44ab7e8ec205a067",
+  "source_contract_blob": "07379a86ded40a678b2621d74bbd090b3a1a97b7",
+  "source_commit": "46395a21458098eb0f6444cdb1c1eee16103f2ec",
+  "sha256": "106cdb1440fe7bc45c1a29b10eabbd9f26fb51c06be165941d3fab53ec426a90"
 }

@@ -3,10 +3,12 @@ import '../../core/networking/json_http_client.dart';
 import '../../core/networking/session_access.dart';
 import '../../core/storage/secure_key_value_store.dart';
 import '../../features/authentication/application/use_cases/session_use_cases.dart';
+import '../../features/authentication/application/use_cases/registration_use_cases.dart';
 import '../../features/authentication/data/repositories/session_repository_impl.dart';
 import '../../features/authentication/data/sources/session_sources.dart';
 import '../../features/authentication/domain/entities/session.dart';
 import '../../features/authentication/presentation/cubit/session_cubit.dart';
+import '../../features/authentication/presentation/cubit/registration_cubit.dart';
 import '../../features/cart_checkout/application/use_cases/update_cart.dart';
 import '../../features/cart_checkout/data/repositories/memory_cart_repository.dart';
 import '../../features/cart_checkout/presentation/cubit/cart_cubit.dart';
@@ -29,6 +31,7 @@ final class AppDependencies {
   AppDependencies._({
     required this.config,
     required this.session,
+    required this.registration,
     required this.theme,
     required this.catalog,
     required this.cart,
@@ -50,7 +53,6 @@ final class AppDependencies {
           clientId: config.googleClientId,
           serverClientId: config.googleServerClientId,
         ),
-        OAuthProvider.apple: AppleCredentialSource(),
       },
     );
     final api = AuthenticatedApiClient(rawHttp, access);
@@ -66,10 +68,17 @@ final class AppDependencies {
       oauthLogin: OAuthLogin(sessionRepository),
       signOut: SignOut(sessionRepository),
     );
+    final registration = RegistrationCubit(
+      begin: BeginRegistration(sessionRepository),
+      resend: ResendRegistration(sessionRepository),
+      verify: VerifyRegistration(sessionRepository),
+      onVerified: session.acceptVerifiedRegistration,
+    );
     access.onInvalidated(session.sessionInvalidated);
     return AppDependencies._(
       config: config,
       session: session,
+      registration: registration,
       theme: ThemeCubit(),
       catalog: CatalogCubit(LoadProducts(catalogRepository)),
       cart: CartCubit(UpdateCart(cartRepository)),
@@ -94,6 +103,7 @@ final class AppDependencies {
 
   final AppConfig config;
   final SessionCubit session;
+  final RegistrationCubit registration;
   final ThemeCubit theme;
   final CatalogCubit catalog;
   final CartCubit cart;
@@ -103,6 +113,7 @@ final class AppDependencies {
 
   Future<void> close() async {
     await session.close();
+    await registration.close();
     await theme.close();
     await catalog.close();
     await cart.close();

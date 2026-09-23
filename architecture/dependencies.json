@@ -7,7 +7,7 @@
       "flutter_secure_storage",
       "go_router",
       "http",
-      "sign_in_with_apple",
+      "lucide_icons_flutter",
       "uuid"
     ],
     "dev_dependencies": [

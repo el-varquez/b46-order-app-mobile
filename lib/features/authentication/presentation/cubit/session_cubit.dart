@@ -66,6 +66,10 @@ final class SessionCubit extends Cubit<SessionState> {
   Future<void> oauth(OAuthProvider provider) =>
       _authenticate(() => _oauthLogin(provider));
 
+  void acceptVerifiedRegistration(Session session) {
+    if (!isClosed) emit(SessionState.authenticated(session));
+  }
+
   Future<void> _authenticate(Future<Session> Function() action) async {
     if (state.status == SessionStatus.authenticating) return;
     emit(const SessionState.authenticating());

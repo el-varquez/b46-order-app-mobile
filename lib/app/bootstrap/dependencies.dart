@@ -23,6 +23,7 @@ import '../../features/customer_orders/data/repositories/customer_order_reposito
 import '../../features/customer_orders/data/sources/customer_order_remote_source.dart';
 import '../../features/customer_orders/presentation/cubit/customer_orders_cubit.dart';
 import '../theme/theme_cubit.dart';
+import 'google_method_channel_auth.dart';
 
 final class AppDependencies {
   AppDependencies._({
@@ -45,6 +46,7 @@ final class AppDependencies {
       access: access,
       providers: {
         OAuthProvider.google: GoogleCredentialSource(
+          native: const GoogleMethodChannelAuth(),
           clientId: config.googleClientId,
           serverClientId: config.googleServerClientId,
         ),

@@ -9,6 +9,7 @@ API_BASE_URL ?= http://127.0.0.1:8080
 BACKEND_PORT ?= 8080
 ORDER_POLL_SECONDS ?= 5
 GOOGLE_SERVER_CLIENT_ID ?=
+GOOGLE_CLIENT_ID ?=
 DEVICE ?=
 EXTRA_DART_DEFINES ?=
 
@@ -18,6 +19,7 @@ DART_DEFINES = --dart-define=APP_ENV=$(APP_ENV) \
 	--dart-define=API_BASE_URL=$(API_BASE_URL) \
 	--dart-define=ORDER_POLL_SECONDS=$(ORDER_POLL_SECONDS) \
 	--dart-define=GOOGLE_SERVER_CLIENT_ID=$(GOOGLE_SERVER_CLIENT_ID) \
+	--dart-define=GOOGLE_CLIENT_ID=$(GOOGLE_CLIENT_ID) \
 	$(EXTRA_DART_DEFINES)
 
 .PHONY: help dependencies setup-ios run debug run-android run-ios debug-apk devices doctor \
@@ -40,7 +42,7 @@ help:
 	@echo   make design         verify Pop Shelf design-system rules
 	@echo   make contracts      verify the pinned backend OpenAPI artifact
 	@echo   make conventions    verify branch and commit conventions
-	@echo Optional overrides: DEVICE, API_BASE_URL, BACKEND_PORT, APP_ENV, ORDER_POLL_SECONDS, GOOGLE_SERVER_CLIENT_ID, EXTRA_DART_DEFINES
+	@echo Optional overrides: DEVICE, API_BASE_URL, BACKEND_PORT, APP_ENV, ORDER_POLL_SECONDS, GOOGLE_SERVER_CLIENT_ID, GOOGLE_CLIENT_ID, EXTRA_DART_DEFINES
 
 dependencies:
 	$(FLUTTER) pub get

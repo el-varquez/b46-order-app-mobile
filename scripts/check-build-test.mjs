@@ -48,9 +48,9 @@ if (!existsSync(join(root, 'pubspec.yaml'))) {
   process.exit(0);
 }
 
-const run = (command, args) => {
+const run = (command, args, cwd = root) => {
   console.log(`\n${command} ${args.join(' ')}`);
-  const result = spawnSync(command, args, { cwd: root, stdio: 'inherit', shell: process.platform === 'win32' });
+  const result = spawnSync(command, args, { cwd, stdio: 'inherit', shell: process.platform === 'win32' });
   if (result.error || result.status !== 0) {
     console.error(`check:build-test FAILED — ${command} ${args.join(' ')}`);
     process.exit(result.status ?? 1);
@@ -62,5 +62,6 @@ run('dart', ['format', '--output=none', '--set-exit-if-changed', 'lib', 'test', 
 run('flutter', ['analyze']);
 run('flutter', ['test']);
 run('flutter', ['build', 'apk', '--debug']);
+run(process.platform === 'win32' ? 'gradlew.bat' : './gradlew', [':app:testDebugUnitTest', '--console=plain'], join(root, 'android'));
 
-console.log('\ncheck:build-test OK — formatting, analysis, tests, and debug APK build passed');
+console.log('\ncheck:build-test OK — formatting, analysis, Flutter and Android tests, and debug APK build passed');

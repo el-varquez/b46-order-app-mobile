@@ -1,6 +1,6 @@
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
+import '../../../../core/errors/app_failure.dart';
 import '../../../../core/networking/json_http_client.dart';
 import '../../../../core/storage/secure_key_value_store.dart';
 import '../../domain/entities/session.dart';
@@ -70,32 +70,65 @@ final class SessionRemoteSource {
 
 abstract interface class OAuthCredentialSource {
   Future<String> credential({required String nonce});
+  Future<void> clearProviderSession();
+}
+
+abstract interface class GoogleNativeAuth {
+  Future<String?> authenticate({
+    required String nonce,
+    required String? clientId,
+    required String serverClientId,
+  });
+  Future<void> signOut();
 }
 
 final class GoogleCredentialSource implements OAuthCredentialSource {
-  GoogleCredentialSource({this.clientId, this.serverClientId});
+  GoogleCredentialSource({
+    required GoogleNativeAuth native,
+    this.clientId,
+    this.serverClientId,
+  }) : _native = native;
 
+  final GoogleNativeAuth _native;
   final String? clientId;
   final String? serverClientId;
-  bool _initialized = false;
+  bool _inFlight = false;
 
   @override
   Future<String> credential({required String nonce}) async {
-    if (!_initialized) {
-      await GoogleSignIn.instance.initialize(
-        clientId: clientId,
-        serverClientId: serverClientId,
-        nonce: nonce,
+    if (_inFlight) {
+      throw const AppFailure(
+        FailureCode.invalidRequest,
+        'Google sign-in is already in progress.',
       );
-      _initialized = true;
     }
-    final account = await GoogleSignIn.instance.authenticate();
-    final token = account.authentication.idToken;
-    if (token == null || token.isEmpty) {
-      throw const FormatException('Google returned no identity token.');
+    if (nonce.isEmpty || serverClientId == null || serverClientId!.isEmpty) {
+      throw const AppFailure(
+        FailureCode.invalidOAuthCredential,
+        'Google sign-in is not configured.',
+      );
     }
-    return token;
+    _inFlight = true;
+    try {
+      final token = await _native.authenticate(
+        nonce: nonce,
+        clientId: clientId,
+        serverClientId: serverClientId!,
+      );
+      if (token == null || token.isEmpty) {
+        throw const AppFailure(
+          FailureCode.invalidOAuthCredential,
+          'Google did not return a sign-in credential.',
+        );
+      }
+      return token;
+    } finally {
+      _inFlight = false;
+    }
   }
+
+  @override
+  Future<void> clearProviderSession() => _native.signOut();
 }
 
 final class AppleCredentialSource implements OAuthCredentialSource {
@@ -114,6 +147,9 @@ final class AppleCredentialSource implements OAuthCredentialSource {
     }
     return token;
   }
+
+  @override
+  Future<void> clearProviderSession() async {}
 }
 
 final class SessionLocalSource {

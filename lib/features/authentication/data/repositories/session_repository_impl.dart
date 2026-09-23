@@ -113,6 +113,15 @@ final class SessionRepositoryImpl implements SessionRepository {
       if (token != null) await _remote.logout(token);
     } on Object {
       // Local secrets are cleared even when the remote logout is unreachable.
+    }
+    try {
+      for (final source in _providers.values) {
+        try {
+          await source.clearProviderSession();
+        } on Object {
+          // Provider cleanup cannot keep a B46 session active.
+        }
+      }
     } finally {
       await _clearLocal();
     }

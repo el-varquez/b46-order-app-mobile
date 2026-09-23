@@ -105,6 +105,13 @@ The iPhone and Mac must both be able to reach that backend address. When only
 one supported phone is connected, `DEVICE` may be omitted. `make run` and
 `make debug` are equivalent generic debug commands.
 
+Google sign-in on iOS additionally needs a Google iOS OAuth client for
+`com.b46.orderapp`. Set its public ID as `GOOGLE_CLIENT_ID`, set the backend
+Web audience as `GOOGLE_SERVER_CLIENT_ID`, and register the iOS client's
+reversed URL scheme in `ios/Runner/Info.plist` before the physical-device
+test. These iOS values are not provisioned yet. The native Google SDK is
+pinned to 9.2.0 so the iOS 13 baseline is retained.
+
 Build an Android debug APK without launching the application:
 
 ```text

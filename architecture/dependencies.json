@@ -6,7 +6,6 @@
       "flutter_bloc",
       "flutter_secure_storage",
       "go_router",
-      "google_sign_in",
       "http",
       "sign_in_with_apple",
       "uuid"

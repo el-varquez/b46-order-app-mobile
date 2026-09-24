@@ -16,7 +16,7 @@ final class CashierRemoteSource {
       query: {
         'limit': '30',
         if (status != null) 'status': status.name.toUpperCase(),
-        if (afterId != null) 'after_id': afterId,
+        'after_id': ?afterId,
       },
     );
     final data = response['data'] as Map<String, dynamic>;

@@ -4,7 +4,8 @@ import '../../domain/repositories/cashier_repository.dart';
 final class LoadCashierOrders {
   const LoadCashierOrders(this._repository);
   final CashierRepository _repository;
-  Future<List<CashierOrder>> call() => _repository.orders();
+  Future<CashierOrderPage> call({FulfillmentStatus? status, String? afterId}) =>
+      _repository.orders(status: status, afterId: afterId);
 }
 
 final class LoadCashierOrder {

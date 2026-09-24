@@ -13,5 +13,8 @@ final class CashierRepositoryImpl implements CashierRepository {
   @override
   Future<CashierOrder> order(String id) => _source.order(id);
   @override
-  Future<List<CashierOrder>> orders() => _source.orders();
+  Future<CashierOrderPage> orders({
+    FulfillmentStatus? status,
+    String? afterId,
+  }) => _source.orders(status: status, afterId: afterId);
 }

@@ -18,6 +18,7 @@ abstract final class CashierOrderModel {
           .map((item) {
             final line = item as Map<String, dynamic>;
             return CashierOrderLine(
+              id: line['order_line_id'] as String,
               name: line['product_name'] as String,
               quantity: line['quantity'] as int,
             );

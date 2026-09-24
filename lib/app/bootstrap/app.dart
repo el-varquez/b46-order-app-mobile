@@ -65,6 +65,7 @@ class _B46AppState extends State<B46App> with WidgetsBindingObserver {
       BlocProvider.value(value: widget.dependencies.session),
       BlocProvider.value(value: widget.dependencies.registration),
       BlocProvider.value(value: widget.dependencies.theme),
+      BlocProvider.value(value: widget.dependencies.deliveryArea),
       BlocProvider.value(value: widget.dependencies.catalog),
       BlocProvider.value(value: widget.dependencies.cart),
       BlocProvider.value(value: widget.dependencies.customerOrders),
@@ -75,7 +76,11 @@ class _B46AppState extends State<B46App> with WidgetsBindingObserver {
       listeners: [
         BlocListener<SessionCubit, SessionState>(
           listener: (context, state) {
+            if (state.status == SessionStatus.authenticated) {
+              widget.dependencies.deliveryArea.loadFor(state.session!.user.id);
+            }
             if (state.status == SessionStatus.signedOut) {
+              widget.dependencies.deliveryArea.clear();
               widget.dependencies.customerOrders.stopPolling();
               widget.dependencies.cashierOrders.clear();
               widget.dependencies.adminCashiers.clear();

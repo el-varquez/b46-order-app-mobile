@@ -29,6 +29,7 @@ import '../../features/customer_orders/data/repositories/customer_order_reposito
 import '../../features/customer_orders/data/sources/customer_order_remote_source.dart';
 import '../../features/customer_orders/presentation/cubit/customer_orders_cubit.dart';
 import '../theme/theme_cubit.dart';
+import '../delivery_area/delivery_area_cubit.dart';
 import 'google_method_channel_auth.dart';
 
 final class AppDependencies {
@@ -37,6 +38,7 @@ final class AppDependencies {
     required this.session,
     required this.registration,
     required this.theme,
+    required this.deliveryArea,
     required this.catalog,
     required this.cart,
     required this.customerOrders,
@@ -89,6 +91,7 @@ final class AppDependencies {
       session: session,
       registration: registration,
       theme: ThemeCubit(),
+      deliveryArea: DeliveryAreaCubit(PlatformSecureKeyValueStore()),
       catalog: CatalogCubit(LoadProducts(catalogRepository)),
       cart: CartCubit(UpdateCart(cartRepository)),
       customerOrders: CustomerOrdersCubit(
@@ -123,6 +126,7 @@ final class AppDependencies {
   final SessionCubit session;
   final RegistrationCubit registration;
   final ThemeCubit theme;
+  final DeliveryAreaCubit deliveryArea;
   final CatalogCubit catalog;
   final CartCubit cart;
   final CustomerOrdersCubit customerOrders;
@@ -134,6 +138,7 @@ final class AppDependencies {
     await session.close();
     await registration.close();
     await theme.close();
+    await deliveryArea.close();
     await catalog.close();
     await cart.close();
     await customerOrders.close();

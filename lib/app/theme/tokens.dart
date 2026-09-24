@@ -1,6 +1,16 @@
 import 'package:flutter/material.dart';
 
 abstract final class PopColors {
+  static const prototypePaper = Color(0xFFFFFAF1);
+  static const prototypeInk = Color(0xFF19100E);
+  static const prototypeLine = Color(0xFFEBCDBD);
+  static const prototypeSoft = Color(0xFFF7DAC7);
+  static const prototypeMuted = Color(0xFF78645C);
+  static const prototypeDarkPaper = Color(0xFF291C18);
+  static const prototypeDarkSurface = Color(0xFF38241E);
+  static const prototypeDarkLine = Color(0xFF624235);
+  static const prototypeDarkSoft = Color(0xFF503126);
+  static const prototypeDarkMuted = Color(0xFFD0B6A8);
   static const authInk = Color(0xFF19100E);
   static const authDarkInk = Color(0xFFFFF7EC);
   static const authSoft = Color(0xFFF7DAC7);

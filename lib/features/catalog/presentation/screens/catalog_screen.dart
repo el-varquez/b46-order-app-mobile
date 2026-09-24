@@ -105,11 +105,54 @@ class _CatalogScreenState extends State<CatalogScreen> {
         appBar: CustomerHeader(
           title: widget.deliveryArea,
           subtitle: 'Delivering to',
-          action: IconButton(
-            key: basketButtonKey,
-            tooltip: 'Your basket',
-            onPressed: widget.onCart,
-            icon: const Icon(PopIcons.basket),
+          action: SizedBox(
+            width: 48,
+            height: 48,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                IconButton(
+                  key: basketButtonKey,
+                  tooltip: widget.cartCount == 0
+                      ? 'Your basket'
+                      : 'Your basket, ${widget.cartCount} item${widget.cartCount == 1 ? '' : 's'}',
+                  onPressed: widget.onCart,
+                  icon: const Icon(PopIcons.basket),
+                ),
+                if (widget.cartCount > 0)
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: IgnorePointer(
+                      child: ExcludeSemantics(
+                        child: Container(
+                          key: const Key('basket-count-badge'),
+                          constraints: const BoxConstraints(
+                            minWidth: 19,
+                            minHeight: 19,
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          alignment: Alignment.center,
+                          decoration: const BoxDecoration(
+                            color: PopColors.launchRed,
+                            borderRadius: BorderRadius.all(Radius.circular(99)),
+                          ),
+                          child: Text(
+                            widget.cartCount > 99
+                                ? '99+'
+                                : '${widget.cartCount}',
+                            style: const TextStyle(
+                              color: PopColors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
         bottomNavigationBar: Column(

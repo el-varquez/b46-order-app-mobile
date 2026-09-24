@@ -57,6 +57,7 @@ const run = (command, args, cwd = root) => {
   }
 };
 
+run('node', ['--test', 'scripts/run-android.test.mjs']);
 run('flutter', ['pub', 'get']);
 run('dart', ['format', '--output=none', '--set-exit-if-changed', 'lib', 'test', 'integration_test']);
 run('flutter', ['analyze']);

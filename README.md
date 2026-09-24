@@ -96,9 +96,25 @@ Enable USB debugging, connect the phone, and run:
 make run-android DEVICE=<android-device-id>
 ```
 
-The command forwards device port `8080` to the development machine, allowing
-the app to reach a locally running backend. Use `BACKEND_PORT=<port>` when the
-backend is not running on `8080`.
+The command detects the laptop's LAN IPv4 address and builds that server URL
+into the app. Keep the phone and laptop on the same network. USB is used for
+installation and debugging; after installation, unplugging ends the debug
+connection but the app can still reach the running backend over Wi-Fi.
+Use `BACKEND_PORT=<port>` when the backend is not running on `8080`.
+
+An explicit `API_BASE_URL` in `.env` or on the command line takes precedence:
+
+```text
+make run-android API_BASE_URL=http://192.168.1.20:8080
+```
+
+Loopback addresses such as `127.0.0.1` are rejected for this target because
+they refer to the phone. If multiple LAN adapters are available, set the URL
+explicitly. The server must listen on a LAN-accessible interface, and the
+laptop firewall must allow its port. If the laptop's IP address changes, run
+the command again to update the installed app; reserving its address in the
+router avoids this. The generic `make run` target still supports explicit USB
+or emulator URLs.
 
 ### iOS collaborator
 

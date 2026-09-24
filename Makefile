@@ -5,6 +5,8 @@
 FLUTTER ?= flutter
 ADB ?= adb
 APP_ENV ?= development
+# Preserve an explicit URL before applying the generic USB/emulator default.
+ANDROID_API_BASE_URL := $(API_BASE_URL)
 API_BASE_URL ?= http://127.0.0.1:8080
 BACKEND_PORT ?= 8080
 ORDER_POLL_SECONDS ?= 5
@@ -14,7 +16,6 @@ DEVICE ?=
 EXTRA_DART_DEFINES ?=
 
 DEVICE_FLAG = $(if $(strip $(DEVICE)),-d $(DEVICE),)
-ADB_DEVICE_FLAG = $(if $(strip $(DEVICE)),-s $(DEVICE),)
 DART_DEFINES = --dart-define=APP_ENV=$(APP_ENV) \
 	--dart-define=API_BASE_URL=$(API_BASE_URL) \
 	--dart-define=ORDER_POLL_SECONDS=$(ORDER_POLL_SECONDS) \
@@ -31,7 +32,7 @@ help:
 	@echo   make setup-ios      prepare Flutter, Swift packages, and iOS artifacts
 	@echo   make run            run a debug app using API_BASE_URL and optional DEVICE
 	@echo   make debug          alias for make run
-	@echo   make run-android    run on a USB Android phone with backend port forwarding
+	@echo   make run-android    install on Android with a backend connection over LAN
 	@echo   make run-ios        compile and run on a selected iPhone
 	@echo   make debug-apk      build the Android debug APK
 	@echo   make devices        list connected Flutter devices
@@ -58,8 +59,7 @@ run:
 debug: run
 
 run-android:
-	$(ADB) $(ADB_DEVICE_FLAG) reverse tcp:$(BACKEND_PORT) tcp:$(BACKEND_PORT)
-	$(MAKE) run API_BASE_URL=http://127.0.0.1:$(BACKEND_PORT) DEVICE="$(DEVICE)"
+	node scripts/run-android.mjs "$(MAKE)" "$(ANDROID_API_BASE_URL)" "$(BACKEND_PORT)" "$(DEVICE)"
 
 run-ios:
 	$(MAKE) run API_BASE_URL="$(API_BASE_URL)" DEVICE="$(DEVICE)"

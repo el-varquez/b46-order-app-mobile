@@ -77,7 +77,7 @@ class _B46AppState extends State<B46App> with WidgetsBindingObserver {
           listener: (context, state) {
             if (state.status == SessionStatus.signedOut) {
               widget.dependencies.customerOrders.stopPolling();
-              widget.dependencies.cashierOrders.stopPolling();
+              widget.dependencies.cashierOrders.clear();
               widget.dependencies.adminCashiers.clear();
               context.read<CartCubit>().clear();
             }

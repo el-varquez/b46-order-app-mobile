@@ -115,8 +115,12 @@ GoRouter createRouter(AppDependencies dependencies, VoidCallback toggleTheme) {
       ),
       GoRoute(
         path: '/staff/orders',
-        builder: (_, _) =>
-            _ExitOnBack(child: _CashierOrdersRoute(dependencies: dependencies)),
+        builder: (_, _) => _ExitOnBack(
+          child: _CashierOrdersRoute(
+            dependencies: dependencies,
+            onToggleTheme: toggleTheme,
+          ),
+        ),
         routes: [
           GoRoute(
             path: ':orderId',
@@ -124,7 +128,10 @@ GoRouter createRouter(AppDependencies dependencies, VoidCallback toggleTheme) {
               final id = state.pathParameters['orderId']!;
               return BlocProvider(
                 create: (_) => dependencies.cashierOrderDetails()..load(id),
-                child: const CashierOrderDetailScreen(),
+                child: CashierOrderDetailScreen(
+                  orderId: id,
+                  onToggleTheme: toggleTheme,
+                ),
               );
             },
           ),
@@ -355,8 +362,12 @@ class _CustomerOrderRouteState extends State<_CustomerOrderRoute> {
 }
 
 class _CashierOrdersRoute extends StatefulWidget {
-  const _CashierOrdersRoute({required this.dependencies});
+  const _CashierOrdersRoute({
+    required this.dependencies,
+    required this.onToggleTheme,
+  });
   final AppDependencies dependencies;
+  final VoidCallback onToggleTheme;
   @override
   State<_CashierOrdersRoute> createState() => _CashierOrdersRouteState();
 }
@@ -377,7 +388,11 @@ class _CashierOrdersRouteState extends State<_CashierOrdersRoute> {
 
   @override
   Widget build(BuildContext context) => CashierOrdersScreen(
-    onOpen: (id) => context.push('/staff/orders/$id'),
+    onOpen: (id) async {
+      await context.push('/staff/orders/$id');
+      if (context.mounted) widget.dependencies.cashierOrders.load();
+    },
     onSignOut: widget.dependencies.session.logout,
+    onToggleTheme: widget.onToggleTheme,
   );
 }

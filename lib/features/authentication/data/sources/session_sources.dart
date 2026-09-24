@@ -108,6 +108,20 @@ final class SessionRemoteSource {
 
   Future<void> logout(String accessToken) =>
       _http.request('POST', '/v1/auth/logout', bearerToken: accessToken);
+
+  Future<AppUser> changePassword(
+    String accessToken,
+    String currentPassword,
+    String newPassword,
+  ) async {
+    final response = await _http.request(
+      'POST',
+      '/v1/me/password',
+      bearerToken: accessToken,
+      body: {'current_password': currentPassword, 'new_password': newPassword},
+    );
+    return SessionModel.userFromData(response['data'] as Map<String, dynamic>);
+  }
 }
 
 abstract interface class OAuthCredentialSource {

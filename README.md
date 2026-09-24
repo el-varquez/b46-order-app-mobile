@@ -55,11 +55,15 @@ Google's “G” remain brand assets rather than Lucide icons.
 
 ## Current status
 
-Phase 5 foundation and vertical slice are implemented on Android API 26+ and
+The Phase 5 foundation and Admin area are implemented on Android API 26+ and
 iOS 13+. One shared login routes backend-issued Customer, Cashier, and Admin
-roles. Customer catalog/cart/checkout/status and Cashier queue/detail/status
-use the backend contract; Admin intentionally shows the planned management
-placeholder. The login now offers Google and email. Email registration requests
+roles. Customer catalog/cart/checkout/status, Cashier queue/detail/status,
+and Admin Cashier management use the backend contract. An Admin adds Cashiers
+  with temporary email credentials and verifies a code sent to the Cashier's
+  email before the account can sign in. The Cashier gives the code to the Admin
+  and must change the temporary password before opening orders. The Admin can
+  disable, restore, and reset a verified Cashier login.
+The login offers Google and email. Email registration requests
 a six-digit code, verifies it through the backend, then stores the same B46
 access/refresh session as password or Google sign-in. The backend owns SMTP;
 the app never carries Maddy credentials.

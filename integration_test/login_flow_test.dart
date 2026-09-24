@@ -40,6 +40,9 @@ void main() {
 
 final class _FakeSessionRepository implements SessionRepository {
   @override
+  Future<Session> changePassword(String currentPassword, String newPassword) =>
+      throw UnimplementedError();
+  @override
   Session? get current => null;
   @override
   Future<Session> loginWithOAuth(OAuthProvider provider) =>

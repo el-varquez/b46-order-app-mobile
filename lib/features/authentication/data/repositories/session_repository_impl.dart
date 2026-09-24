@@ -158,6 +158,56 @@ final class SessionRepositoryImpl
     }
   }
 
+  @override
+  Future<Session> changePassword(
+    String currentPassword,
+    String newPassword,
+  ) async {
+    var session = _current;
+    if (session == null) {
+      throw const AppFailure(
+        FailureCode.unauthenticated,
+        'Sign in again to change your password.',
+      );
+    }
+    if (session.accessTokenExpiresAt.isBefore(DateTime.now().toUtc())) {
+      if (!await refresh()) {
+        throw const AppFailure(
+          FailureCode.unauthenticated,
+          'Sign in again to change your password.',
+        );
+      }
+      session = _current!;
+    }
+    AppUser user;
+    try {
+      user = await _remote.changePassword(
+        session.accessToken,
+        currentPassword,
+        newPassword,
+      );
+    } on AppFailure catch (failure) {
+      if (failure.code != FailureCode.unauthenticated || !await refresh()) {
+        rethrow;
+      }
+      session = _current!;
+      user = await _remote.changePassword(
+        session.accessToken,
+        currentPassword,
+        newPassword,
+      );
+    }
+    final updated = Session(
+      accessToken: session.accessToken,
+      accessTokenExpiresAt: session.accessTokenExpiresAt,
+      refreshToken: session.refreshToken,
+      refreshTokenExpiresAt: session.refreshTokenExpiresAt,
+      user: user,
+    );
+    await _save(updated);
+    return updated;
+  }
+
   Future<void> _save(Session session) async {
     await _local.write(session);
     _set(session);

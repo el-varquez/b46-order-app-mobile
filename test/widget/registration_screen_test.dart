@@ -83,6 +83,15 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
+        await tester.scrollUntilVisible(
+          find.byKey(const Key('register-submit')),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.byKey(const Key('register-submit')));
+        await tester.pumpAndSettle();
         await tester.tap(find.byKey(const Key('register-submit')));
         await tester.pump();
         expect(
@@ -125,11 +134,17 @@ void main() {
     expect(isObscured(password), isTrue);
     expect(isObscured(confirmation), isTrue);
 
+    await tester.ensureVisible(
+      find.byKey(const Key('register-password-visibility')),
+    );
     await tester.tap(find.byKey(const Key('register-password-visibility')));
     await tester.pump();
     expect(isObscured(password), isFalse);
     expect(isObscured(confirmation), isTrue);
 
+    await tester.ensureVisible(
+      find.byKey(const Key('register-confirm-password-visibility')),
+    );
     await tester.tap(
       find.byKey(const Key('register-confirm-password-visibility')),
     );
@@ -171,6 +186,15 @@ void main() {
       find.byKey(const Key('register-confirm-password')),
       'abcdefg',
     );
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('register-submit')),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('register-submit')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('register-submit')));
     await tester.pump();
     expect(find.text('Use at least 8 characters.'), findsOneWidget);
@@ -184,6 +208,15 @@ void main() {
       find.byKey(const Key('register-confirm-password')),
       'abcdefgh',
     );
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('register-submit')),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('register-submit')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('register-submit')));
     await tester.pump();
     expect(repository.beginCount, 1);
@@ -223,7 +256,15 @@ void main() {
       find.byKey(const Key('register-confirm-password')),
       'abcdefgh',
     );
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('register-submit')),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.byKey(const Key('register-submit')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('register-submit')));
     await tester.pump();
     expect(find.text('Enter a valid email address.'), findsOneWidget);

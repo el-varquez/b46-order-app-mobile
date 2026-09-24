@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../app/theme/tokens.dart';
 import '../../../../shared/components/pop_icons.dart';
-import '../../../../shared/components/pop_scaffold.dart';
+import '../components/auth_form.dart';
 import '../cubit/registration_cubit.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -41,16 +41,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => PopScaffold(
-    appBar: AppBar(
-      leading: const PopBackButton(),
-      title: const Text('Create an account'),
-    ),
+  Widget build(BuildContext context) => AuthFormScaffold(
+    title: 'Create an account',
     child: BlocBuilder<RegistrationCubit, RegistrationState>(
       builder: (context, state) => ListView(
-        padding: const EdgeInsets.all(PopSpace.lg),
+        padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
         children: [
-          const B46Mark(),
+          const AuthWordmark(),
           const SizedBox(height: PopSpace.lg),
           Text(
             'Join your neighborhood store',
@@ -64,13 +61,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                const AuthFieldLabel('Name'),
+                const SizedBox(height: 6),
                 TextFormField(
                   key: const Key('register-name'),
                   controller: name,
                   textCapitalization: TextCapitalization.words,
                   textInputAction: TextInputAction.next,
                   autofillHints: const [AutofillHints.name],
-                  decoration: const InputDecoration(labelText: 'Name'),
+                  decoration: const InputDecoration(hintText: 'Your full name'),
                   validator: (value) =>
                       value == null ||
                           value.trim().isEmpty ||
@@ -78,14 +77,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       ? 'Enter your name (up to 120 characters).'
                       : null,
                 ),
-                const SizedBox(height: PopSpace.md),
+                const SizedBox(height: 23),
+                const AuthFieldLabel('Email address'),
+                const SizedBox(height: 6),
                 TextFormField(
                   key: const Key('register-email'),
                   controller: email,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
                   autofillHints: const [AutofillHints.email],
-                  decoration: const InputDecoration(labelText: 'Email address'),
+                  decoration: const InputDecoration(hintText: 'you@gmail.com'),
                   validator: (value) {
                     final entered = value?.trim() ?? '';
                     final parts = entered.split('@');
@@ -97,7 +98,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         : 'Enter a valid email address.';
                   },
                 ),
-                const SizedBox(height: PopSpace.md),
+                const SizedBox(height: 23),
+                const AuthFieldLabel('Password'),
+                const SizedBox(height: 6),
                 TextFormField(
                   key: const Key('register-password'),
                   controller: password,
@@ -105,7 +108,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   textInputAction: TextInputAction.next,
                   autofillHints: const [AutofillHints.newPassword],
                   decoration: InputDecoration(
-                    labelText: 'Password',
+                    hintText: 'Create a password',
                     helperText: 'At least 8 characters.',
                     suffixIcon: IconButton(
                       key: const Key('register-password-visibility'),
@@ -126,7 +129,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: PopSpace.md),
+                const SizedBox(height: 23),
+                const AuthFieldLabel('Confirm password'),
+                const SizedBox(height: 6),
                 TextFormField(
                   key: const Key('register-confirm-password'),
                   controller: confirmPassword,
@@ -134,7 +139,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   textInputAction: TextInputAction.done,
                   autofillHints: const [AutofillHints.newPassword],
                   decoration: InputDecoration(
-                    labelText: 'Confirm password',
+                    hintText: 'Re-enter your password',
                     suffixIcon: IconButton(
                       key: const Key('register-confirm-password-visibility'),
                       tooltip: showConfirmPassword
@@ -159,7 +164,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           ),
           if (state.message != null) ...[
             const SizedBox(height: PopSpace.md),
-            Text(state.message!, textAlign: TextAlign.center),
+            AuthMessage(state.message!),
           ],
           const SizedBox(height: PopSpace.lg),
           FilledButton(
@@ -215,19 +220,16 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => PopScaffold(
-    appBar: AppBar(
-      leading: const PopBackButton(),
-      title: const Text('Verify your email'),
-    ),
+  Widget build(BuildContext context) => AuthFormScaffold(
+    title: 'Verify your email',
     child: BlocBuilder<RegistrationCubit, RegistrationState>(
       builder: (context, state) {
         final seconds =
             state.resendAvailableAt?.difference(DateTime.now()).inSeconds ?? 0;
         return ListView(
-          padding: const EdgeInsets.all(PopSpace.lg),
+          padding: const EdgeInsets.fromLTRB(16, 36, 16, 24),
           children: [
-            const B46Mark(),
+            const AuthWordmark(),
             const SizedBox(height: PopSpace.lg),
             Text(
               'Check your inbox',
@@ -238,6 +240,8 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
               'If this address can be registered, we sent a six-digit code to ${state.email}.',
             ),
             const SizedBox(height: PopSpace.lg),
+            const AuthFieldLabel('Verification code'),
+            const SizedBox(height: 6),
             TextField(
               key: const Key('verification-code'),
               controller: code,
@@ -245,7 +249,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
               textInputAction: TextInputAction.done,
               maxLength: 6,
               autofillHints: const [AutofillHints.oneTimeCode],
-              decoration: const InputDecoration(labelText: 'Verification code'),
+              decoration: const InputDecoration(hintText: 'Six-digit code'),
               onSubmitted: (_) => _verify(context),
             ),
             const SizedBox(height: PopSpace.md),
@@ -269,7 +273,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
             ),
             if (state.message != null) ...[
               const SizedBox(height: PopSpace.md),
-              Text(state.message!, textAlign: TextAlign.center),
+              AuthMessage(state.message!),
             ],
             if (state.busy) ...[
               const SizedBox(height: PopSpace.md),

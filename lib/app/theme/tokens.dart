@@ -1,6 +1,21 @@
 import 'package:flutter/material.dart';
 
 abstract final class PopColors {
+  static const authInk = Color(0xFF19100E);
+  static const authDarkInk = Color(0xFFFFF7EC);
+  static const authSoft = Color(0xFFF7DAC7);
+  static const authDarkSoft = Color(0xFF503126);
+  static const authDanger = Color(0xFFC91427);
+  static const authDarkDanger = Color(0xFFFF6D7B);
+  // Prototype palette; scoped to authentication screens.
+  static const launchRed = Color(0xFFF10F24);
+  static const launchBackground = Color(0xFF211714);
+  static const launchSurface = Color(0xFF38241E);
+  static const launchOutline = Color(0xFF624235);
+  static const launchMuted = Color(0xFFD0B6A8);
+  static const launchLightOutline = Color(0xFFEBCDBD);
+  static const launchLightMuted = Color(0xFF78645C);
+  static const launchShadow = Color(0xFF080808);
   static const brandRed = Color(0xFFF80D2C);
   static const brandRedDark = Color(0xFFC90822);
   static const ink = Color(0xFF211613);

@@ -59,10 +59,7 @@ GoRouter createRouter(AppDependencies dependencies, VoidCallback toggleTheme) {
       GoRoute(
         path: '/login',
         builder: (context, _) => _ExitOnBack(
-          child: LoginScreen(
-            onEmail: () => context.push('/login/email'),
-            onToggleTheme: toggleTheme,
-          ),
+          child: LoginScreen(onEmail: () => context.push('/login/email')),
         ),
       ),
       GoRoute(

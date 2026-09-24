@@ -3,119 +3,228 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../app/theme/tokens.dart';
 import '../../../../shared/components/pop_icons.dart';
-import '../../../../shared/components/pop_scaffold.dart';
+import '../components/auth_form.dart';
 import '../../domain/entities/session.dart';
 import '../cubit/session_cubit.dart';
 
 class LoginScreen extends StatelessWidget {
-  const LoginScreen({
-    required this.onEmail,
-    required this.onToggleTheme,
-    super.key,
-  });
+  const LoginScreen({required this.onEmail, super.key});
 
   final VoidCallback onEmail;
-  final VoidCallback onToggleTheme;
 
   @override
-  Widget build(BuildContext context) => PopScaffold(
-    child: BlocBuilder<SessionCubit, SessionState>(
-      builder: (context, state) {
-        final loading = state.status == SessionStatus.authenticating;
-        return LayoutBuilder(
-          builder: (context, viewport) => SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
-              PopSpace.lg,
-              PopSpace.xs,
-              PopSpace.lg,
-              PopSpace.lg,
-            ),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: viewport.maxHeight - PopSpace.xs - PopSpace.lg,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: IconButton(
-                      tooltip: 'Switch theme',
-                      onPressed: onToggleTheme,
-                      icon: const Icon(PopIcons.theme),
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final foreground = dark ? PopColors.cream : PopColors.ink;
+    final buttonShape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(14),
+    );
+    return Scaffold(
+      backgroundColor: dark ? PopColors.launchBackground : PopColors.cream,
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: BlocBuilder<SessionCubit, SessionState>(
+              builder: (context, state) {
+                final loading = state.status == SessionStatus.authenticating;
+                return LayoutBuilder(
+                  builder: (context, viewport) => SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(16, 42, 16, 24),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: (viewport.maxHeight - 66).clamp(
+                          0,
+                          double.infinity,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const _LaunchPoster(),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 34),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                if (state.message != null) ...[
+                                  Semantics(
+                                    liveRegion: true,
+                                    child: Text(
+                                      state.message!,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(color: foreground),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 14),
+                                ],
+                                FilledButton(
+                                  onPressed: loading
+                                      ? null
+                                      : () => context
+                                            .read<SessionCubit>()
+                                            .oauth(OAuthProvider.google),
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: PopColors.launchRed,
+                                    foregroundColor: PopColors.white,
+                                    minimumSize: const Size.fromHeight(50),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 17,
+                                      vertical: 14,
+                                    ),
+                                    shape: buttonShape,
+                                    textStyle: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Continue with Google',
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                OutlinedButton(
+                                  onPressed: loading ? null : onEmail,
+                                  style: OutlinedButton.styleFrom(
+                                    backgroundColor: dark
+                                        ? PopColors.launchSurface
+                                        : PopColors.white,
+                                    foregroundColor: foreground,
+                                    minimumSize: const Size.fromHeight(50),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 17,
+                                      vertical: 14,
+                                    ),
+                                    shape: buttonShape,
+                                    side: BorderSide(
+                                      color: dark
+                                          ? PopColors.launchOutline
+                                          : PopColors.launchLightOutline,
+                                    ),
+                                    textStyle: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Continue with email',
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                                if (loading) ...[
+                                  const SizedBox(height: 14),
+                                  const Center(
+                                    child: CircularProgressIndicator(
+                                      color: PopColors.launchRed,
+                                      semanticsLabel: 'Signing in',
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(height: 24),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  SizedBox(height: viewport.maxHeight * 0.10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(PopSpace.lg),
-                        decoration: BoxDecoration(
-                          color: PopColors.brandRed,
-                          borderRadius: BorderRadius.circular(PopRadius.lg),
-                        ),
-                        child: const Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            B46Mark(large: true, onRedBackground: true),
-                            SizedBox(height: PopSpace.xl),
-                            Text(
-                              'BIG CRAVINGS.\nSMALL TRIP.',
-                              style: TextStyle(
-                                color: PopColors.white,
-                                fontSize: 34,
-                                height: 0.98,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                            SizedBox(height: PopSpace.sm),
-                            Text(
-                              'Neighborhood essentials delivered inside Bria.',
-                              style: TextStyle(
-                                color: PopColors.white,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: PopSpace.xl),
-                      if (state.message != null) ...[
-                        Text(state.message!, textAlign: TextAlign.center),
-                        const SizedBox(height: PopSpace.md),
-                      ],
-                      FilledButton.icon(
-                        onPressed: loading
-                            ? null
-                            : () => context.read<SessionCubit>().oauth(
-                                OAuthProvider.google,
-                              ),
-                        icon: const Text(
-                          'G',
-                          style: TextStyle(fontWeight: FontWeight.w900),
-                        ),
-                        label: const Text('Continue with Google'),
-                      ),
-                      const SizedBox(height: PopSpace.sm),
-                      TextButton(
-                        onPressed: loading ? null : onEmail,
-                        child: const Text('Continue with email'),
-                      ),
-                      if (loading) ...[
-                        const SizedBox(height: PopSpace.md),
-                        const Center(child: CircularProgressIndicator()),
-                      ],
-                    ],
-                  ),
-                ],
-              ),
+                );
+              },
             ),
           ),
-        );
-      },
-    ),
-  );
+        ),
+      ),
+    );
+  }
+}
+
+class _LaunchPoster extends StatelessWidget {
+  const _LaunchPoster();
+
+  @override
+  Widget build(BuildContext context) {
+    const shape = BorderRadius.only(
+      topLeft: Radius.circular(12),
+      topRight: Radius.circular(70),
+      bottomLeft: Radius.circular(12),
+      bottomRight: Radius.circular(12),
+    );
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        borderRadius: shape,
+        boxShadow: [
+          BoxShadow(color: PopColors.launchShadow, offset: Offset(10, 10)),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: shape,
+        child: ColoredBox(
+          color: PopColors.launchRed,
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(26),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const AuthWordmark(onRedBackground: true),
+                    const SizedBox(height: 24),
+                    const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'BIG\nCRAVINGS.\nSMALL TRIP.',
+                        textScaler: TextScaler.noScaling,
+                        style: TextStyle(
+                          color: PopColors.white,
+                          fontSize: 56,
+                          height: 0.92,
+                          letterSpacing: -3.08,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 240),
+                      child: const Text(
+                        'Neighborhood essentials delivered inside Bria subdivision.',
+                        style: TextStyle(
+                          color: PopColors.white,
+                          fontSize: 16,
+                          height: 1.32,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Positioned(
+                right: -52,
+                bottom: -70,
+                child: IgnorePointer(
+                  child: Container(
+                    width: 288,
+                    height: 288,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: PopColors.white.withValues(alpha: 0.2),
+                        width: 34,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class EmailLoginScreen extends StatefulWidget {
@@ -140,39 +249,35 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => PopScaffold(
-    appBar: AppBar(leading: const PopBackButton()),
+  Widget build(BuildContext context) => AuthFormScaffold(
+    title: 'Log in',
     child: BlocBuilder<SessionCubit, SessionState>(
       builder: (context, state) => ListView(
-        padding: const EdgeInsets.all(PopSpace.lg),
+        padding: const EdgeInsets.fromLTRB(16, 36, 16, 24),
         children: [
-          const B46Mark(),
-          const SizedBox(height: PopSpace.xl),
-          Text('Log in', style: Theme.of(context).textTheme.headlineMedium),
-          const SizedBox(height: PopSpace.xl),
+          const AuthWordmark(),
+          const SizedBox(height: 10),
           Form(
             key: formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text('Email address'),
-                const SizedBox(height: PopSpace.xs),
+                const AuthFieldLabel('Email address'),
+                const SizedBox(height: 6),
                 TextFormField(
                   key: const Key('email-field'),
                   controller: email,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
                   autofillHints: const [AutofillHints.email],
-                  decoration: const InputDecoration(
-                    hintText: 'Enter your email',
-                  ),
+                  decoration: const InputDecoration(hintText: 'you@gmail.com'),
                   validator: (value) => (value?.trim() ?? '').contains('@')
                       ? null
                       : 'Enter a valid email address.',
                 ),
                 const SizedBox(height: PopSpace.lg),
-                const Text('Password'),
-                const SizedBox(height: PopSpace.xs),
+                const AuthFieldLabel('Password'),
+                const SizedBox(height: 6),
                 TextFormField(
                   key: const Key('password-field'),
                   controller: password,
@@ -212,7 +317,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
               child: const Text('Forgot password?'),
             ),
           ),
-          const SizedBox(height: PopSpace.lg),
+          const SizedBox(height: 10),
           FilledButton(
             onPressed: state.status == SessionStatus.authenticating
                 ? null
@@ -225,9 +330,9 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
           ],
           if (state.message != null) ...[
             const SizedBox(height: PopSpace.md),
-            Text(state.message!, textAlign: TextAlign.center),
+            AuthMessage(state.message!),
           ],
-          const SizedBox(height: PopSpace.lg),
+          const SizedBox(height: 10),
           Wrap(
             alignment: WrapAlignment.center,
             crossAxisAlignment: WrapCrossAlignment.center,

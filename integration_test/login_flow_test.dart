@@ -26,10 +26,7 @@ void main() {
         ),
         child: MaterialApp(
           theme: AppTheme.light,
-          home: LoginScreen(
-            onEmail: () => selected = true,
-            onToggleTheme: () {},
-          ),
+          home: LoginScreen(onEmail: () => selected = true),
         ),
       ),
     );

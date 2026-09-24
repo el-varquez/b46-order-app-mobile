@@ -28,7 +28,7 @@ void main() {
             value: cubit,
             child: MaterialApp(
               theme: theme,
-              home: LoginScreen(onEmail: () {}, onToggleTheme: () {}),
+              home: LoginScreen(onEmail: () {}),
             ),
           ),
         );

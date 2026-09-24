@@ -26,3 +26,10 @@ final class SignOut {
   final SessionRepository _repository;
   Future<void> call() => _repository.logout();
 }
+
+final class ChangeOwnPassword {
+  const ChangeOwnPassword(this._repository);
+  final SessionRepository _repository;
+  Future<Session> call(String currentPassword, String newPassword) =>
+      _repository.changePassword(currentPassword, newPassword);
+}

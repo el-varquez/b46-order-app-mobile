@@ -32,16 +32,36 @@ final class SessionCubit extends Cubit<SessionState> {
     required PasswordLogin passwordLogin,
     required OAuthLogin oauthLogin,
     required SignOut signOut,
+    ChangeOwnPassword? changePassword,
   }) : _restoreSession = restoreSession,
        _passwordLogin = passwordLogin,
        _oauthLogin = oauthLogin,
        _signOut = signOut,
+       _changePassword = changePassword,
        super(const SessionState.restoring());
 
   final RestoreSession _restoreSession;
   final PasswordLogin _passwordLogin;
   final OAuthLogin _oauthLogin;
   final SignOut _signOut;
+  final ChangeOwnPassword? _changePassword;
+
+  Future<String?> changePassword(
+    String currentPassword,
+    String newPassword,
+  ) async {
+    final action = _changePassword;
+    if (action == null) return 'Password change is unavailable.';
+    try {
+      final updated = await action(currentPassword, newPassword);
+      emit(SessionState.authenticated(updated));
+      return null;
+    } on AppFailure catch (failure) {
+      return failure.message;
+    } on Object {
+      return 'Could not change your password. Please try again.';
+    }
+  }
 
   Future<void> restore() async {
     try {

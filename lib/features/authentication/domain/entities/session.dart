@@ -9,6 +9,7 @@ final class AppUser {
     required this.email,
     required this.role,
     required this.active,
+    this.passwordChangeRequired = false,
   });
 
   final String id;
@@ -16,6 +17,7 @@ final class AppUser {
   final String email;
   final UserRole role;
   final bool active;
+  final bool passwordChangeRequired;
 }
 
 final class Session {

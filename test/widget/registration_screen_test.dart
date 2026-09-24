@@ -232,6 +232,9 @@ void main() {
 }
 
 final class _SessionRepository implements SessionRepository {
+  @override
+  Future<Session> changePassword(String currentPassword, String newPassword) =>
+      throw UnimplementedError();
   String? lastEmail;
   String? lastPassword;
 

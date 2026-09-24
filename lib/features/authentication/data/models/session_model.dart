@@ -33,6 +33,7 @@ final class SessionModel {
       _ => throw const FormatException('Unknown role'),
     },
     active: user['status'] == 'ACTIVE',
+    passwordChangeRequired: user['password_change_required'] == true,
   );
 
   factory SessionModel.decode(String value) =>
@@ -49,6 +50,7 @@ final class SessionModel {
       'email': session.user.email,
       'role': session.user.role.name.toUpperCase(),
       'status': session.user.active ? 'ACTIVE' : 'DISABLED',
+      'password_change_required': session.user.passwordChangeRequired,
     },
   });
 }

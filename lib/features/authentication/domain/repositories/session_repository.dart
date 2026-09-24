@@ -6,5 +6,6 @@ abstract interface class SessionRepository {
   Future<Session> loginWithOAuth(OAuthProvider provider);
   Future<bool> refresh();
   Future<void> logout();
+  Future<Session> changePassword(String currentPassword, String newPassword);
   Session? get current;
 }

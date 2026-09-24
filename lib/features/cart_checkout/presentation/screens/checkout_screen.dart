@@ -48,7 +48,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget build(BuildContext context) => CustomerTheme(
     child: Builder(
       builder: (context) => Scaffold(
-        appBar: const CustomerHeader(title: 'Your basket', back: true),
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(68),
+          child: BlocBuilder<CartCubit, CartState>(
+            builder: (context, cart) => CustomerHeader(
+              title: 'Your basket (${cart.itemCount})',
+              back: true,
+            ),
+          ),
+        ),
         body: BlocBuilder<CartCubit, CartState>(
           builder: (context, cart) => ListView(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),

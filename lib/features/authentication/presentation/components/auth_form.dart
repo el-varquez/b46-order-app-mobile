@@ -117,7 +117,7 @@ class AuthFormScaffold extends StatelessWidget {
                                 .backButtonTooltip,
                             onPressed: () => Navigator.of(context).maybePop(),
                             style: IconButton.styleFrom(
-                              backgroundColor: soft,
+                              backgroundColor: soft.withValues(alpha: 0.42),
                               foregroundColor: ink,
                               fixedSize: const Size(46, 46),
                             ),

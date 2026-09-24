@@ -50,6 +50,7 @@ void main() {
     );
     await tester.pump();
     expect(find.text('Block 8, Lot 2, Bria Homes'), findsOneWidget);
+    expect(find.byKey(const Key('basket-count-badge')), findsNothing);
     expect(find.text('Coke 1.5L'), findsOneWidget);
     await tester.tap(find.byTooltip('Your basket'));
     expect(cartOpened, isTrue);
@@ -107,6 +108,7 @@ void main() {
     final catalog = CatalogCubit(LoadProducts(_CatalogRepository()));
     final cart = CartCubit(UpdateCart(MemoryCartRepository()));
     await catalog.load();
+    var opened = 0;
     await tester.pumpWidget(
       MultiBlocProvider(
         providers: [
@@ -125,7 +127,7 @@ void main() {
                   unitPriceCentavos: product.priceCentavos,
                 ),
               ),
-              onCart: () {},
+              onCart: () => opened++,
               onOrders: () {},
               onSignOut: () {},
             ),
@@ -140,6 +142,17 @@ void main() {
     await tester.pump();
     expect(cart.state.itemCount, 1);
     expect(find.byKey(const Key('view-cart')), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('basket-count-badge')),
+        matching: find.text('1'),
+      ),
+      findsOneWidget,
+    );
+    await tester.tapAt(
+      tester.getCenter(find.byKey(const Key('basket-count-badge'))),
+    );
+    expect(opened, 1);
     expect(find.byKey(const Key('add-to-basket-flight')), findsOneWidget);
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.byKey(const Key('add-to-basket-flight')), findsOneWidget);
@@ -148,6 +161,13 @@ void main() {
     await tester.tap(find.text('Add').first);
     await tester.pump();
     expect(cart.state.itemCount, 2);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('basket-count-badge')),
+        matching: find.text('2'),
+      ),
+      findsOneWidget,
+    );
     expect(find.byKey(const Key('add-to-basket-flight')), findsNWidgets(2));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('add-to-basket-flight')), findsNothing);
@@ -178,13 +198,16 @@ void main() {
     );
     await tester.pump();
     const row = ValueKey('basket-line-coke');
+    expect(find.text('Your basket (1)'), findsOneWidget);
     expect(find.byTooltip('Remove'), findsNothing);
     await tester.tap(find.byIcon(PopIcons.plus));
     await tester.pump();
     expect(cart.state.itemCount, 2);
+    expect(find.text('Your basket (2)'), findsOneWidget);
     await tester.tap(find.byIcon(PopIcons.minus));
     await tester.pump();
     expect(cart.state.itemCount, 1);
+    expect(find.text('Your basket (1)'), findsOneWidget);
     await tester.drag(find.byKey(row), const Offset(260, 0));
     await tester.pumpAndSettle();
     expect(cart.state.lines, hasLength(1));

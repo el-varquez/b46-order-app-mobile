@@ -100,6 +100,41 @@ void main() {
     await cart.close();
   });
 
+  testWidgets('basket item removes only after a left swipe', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(320, 760));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final cart = CartCubit(UpdateCart(MemoryCartRepository()));
+    cart.add(
+      const CartProduct(id: 'coke', name: 'Coke 1.5L', unitPriceCentavos: 8200),
+    );
+    await tester.pumpWidget(
+      BlocProvider.value(
+        value: cart,
+        child: MaterialApp(
+          theme: AppTheme.light,
+          home: CheckoutScreen(
+            placing: false,
+            message: null,
+            onPlace: (_, _) async {},
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    const row = ValueKey('basket-line-coke');
+    expect(find.byTooltip('Remove'), findsNothing);
+    await tester.drag(find.byKey(row), const Offset(260, 0));
+    await tester.pumpAndSettle();
+    expect(cart.state.lines, hasLength(1));
+
+    await tester.drag(find.byKey(row), const Offset(-280, 0));
+    await tester.pumpAndSettle();
+    expect(cart.state.lines, isEmpty);
+    expect(find.text('Your basket is empty'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await cart.close();
+  });
+
   testWidgets('orders and order status fit a 320px phone', (tester) async {
     await tester.binding.setSurfaceSize(const Size(320, 760));
     addTearDown(() => tester.binding.setSurfaceSize(null));

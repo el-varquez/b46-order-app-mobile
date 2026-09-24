@@ -105,106 +105,120 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ...cart.lines.map(
                   (line) => Padding(
                     padding: const EdgeInsets.only(bottom: 10),
-                    child: CustomerCard(
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 64,
-                            height: 64,
-                            decoration: BoxDecoration(
-                              color: CustomerPalette.soft(context),
-                              borderRadius: BorderRadius.circular(9),
-                            ),
-                            child: const Icon(PopIcons.groceries, size: 32),
+                    child: Dismissible(
+                      key: ValueKey('basket-line-${line.product.id}'),
+                      direction: DismissDirection.endToStart,
+                      onDismissed: (_) =>
+                          context.read<CartCubit>().remove(line.product.id),
+                      background: Container(
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 20),
+                        decoration: BoxDecoration(
+                          color: PopColors.authDanger,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Text(
+                          'Remove',
+                          style: TextStyle(
+                            color: PopColors.white,
+                            fontWeight: FontWeight.w800,
                           ),
-                          const SizedBox(width: 11),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  line.product.name,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '${_money(line.product.unitPriceCentavos)} each',
-                                  style: TextStyle(
-                                    color: CustomerPalette.muted(context),
-                                    fontSize: 11,
-                                  ),
-                                ),
-                                if (cart.unavailableIds.contains(
-                                  line.product.id,
-                                ))
-                                  const Text(
-                                    'Sold out',
-                                    style: TextStyle(
-                                      color: PopColors.authDanger,
-                                      fontSize: 11,
+                        ),
+                      ),
+                      child: CustomerCard(
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 64,
+                              height: 64,
+                              decoration: BoxDecoration(
+                                color: CustomerPalette.soft(context),
+                                borderRadius: BorderRadius.circular(9),
+                              ),
+                              child: const Icon(PopIcons.groceries, size: 32),
+                            ),
+                            const SizedBox(width: 11),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    line.product.name,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 14,
                                       fontWeight: FontWeight.w800,
                                     ),
                                   ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  _money(line.lineTotalCentavos),
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Column(
-                            children: [
-                              IconButton(
-                                tooltip: 'Remove',
-                                onPressed: () => context
-                                    .read<CartCubit>()
-                                    .remove(line.product.id),
-                                icon: const Icon(PopIcons.remove, size: 18),
-                              ),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  _quantityButton(
-                                    context,
-                                    '-',
-                                    () => context.read<CartCubit>().decrement(
-                                      line.product.id,
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${_money(line.product.unitPriceCentavos)} each',
+                                    style: TextStyle(
+                                      color: CustomerPalette.muted(context),
+                                      fontSize: 11,
                                     ),
                                   ),
-                                  SizedBox(
-                                    width: 28,
-                                    child: Text(
-                                      '${line.quantity}',
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
+                                  if (cart.unavailableIds.contains(
+                                    line.product.id,
+                                  ))
+                                    const Text(
+                                      'Sold out',
+                                      style: TextStyle(
+                                        color: PopColors.authDanger,
+                                        fontSize: 11,
                                         fontWeight: FontWeight.w800,
                                       ),
                                     ),
-                                  ),
-                                  _quantityButton(
-                                    context,
-                                    '+',
-                                    cart.unavailableIds.contains(
-                                          line.product.id,
-                                        )
-                                        ? null
-                                        : () => context.read<CartCubit>().add(
-                                            line.product,
-                                          ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    _money(line.lineTotalCentavos),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w900,
+                                    ),
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
-                        ],
+                            ),
+                            Column(
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    _quantityButton(
+                                      context,
+                                      '-',
+                                      () => context.read<CartCubit>().decrement(
+                                        line.product.id,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 28,
+                                      child: Text(
+                                        '${line.quantity}',
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ),
+                                    _quantityButton(
+                                      context,
+                                      '+',
+                                      cart.unavailableIds.contains(
+                                            line.product.id,
+                                          )
+                                          ? null
+                                          : () => context.read<CartCubit>().add(
+                                              line.product,
+                                            ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

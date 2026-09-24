@@ -339,15 +339,19 @@ class CustomerOrderStatusScreen extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                     child: Center(
-                      child: Text(
-                        index <= current ? '✓' : '${index + 1}',
-                        style: TextStyle(
-                          color: index <= current
-                              ? PopColors.white
-                              : CustomerPalette.ink(context),
-                          fontSize: 11,
-                        ),
-                      ),
+                      child: index <= current
+                          ? const Icon(
+                              PopIcons.check,
+                              size: 13,
+                              color: PopColors.white,
+                            )
+                          : Text(
+                              '${index + 1}',
+                              style: TextStyle(
+                                color: CustomerPalette.ink(context),
+                                fontSize: 11,
+                              ),
+                            ),
                     ),
                   ),
                   if (index < steps.length - 1)

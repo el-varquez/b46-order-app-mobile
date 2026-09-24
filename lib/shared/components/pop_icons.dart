@@ -10,7 +10,7 @@ abstract final class PopIcons {
   static const IconData hidePassword = LucideIcons.eyeOff;
   static const IconData signOut = LucideIcons.logOut;
   static const IconData orders = LucideIcons.receiptText;
-  static const IconData basket = LucideIcons.shoppingBag;
+  static const IconData basket = LucideIcons.shoppingBasket;
   static const IconData home = LucideIcons.house;
   static const IconData profile = LucideIcons.circleUserRound;
   static const IconData search = LucideIcons.search;
@@ -18,6 +18,11 @@ abstract final class PopIcons {
   static const IconData drink = LucideIcons.cupSoda;
   static const IconData pantry = LucideIcons.cookingPot;
   static const IconData groceries = LucideIcons.shoppingBasket;
+  static const IconData plus = LucideIcons.plus;
+  static const IconData minus = LucideIcons.minus;
+  static const IconData check = LucideIcons.check;
+  static const IconData arrowRight = LucideIcons.arrowRight;
+  static const IconData cash = LucideIcons.banknote;
   static const IconData remove = LucideIcons.trash2;
   static const IconData decrease = LucideIcons.circleMinus;
   static const IconData increase = LucideIcons.circlePlus;

@@ -187,7 +187,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   children: [
                                     _quantityButton(
                                       context,
-                                      '-',
+                                      PopIcons.minus,
+                                      'Decrease quantity',
                                       () => context.read<CartCubit>().decrement(
                                         line.product.id,
                                       ),
@@ -204,7 +205,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                     ),
                                     _quantityButton(
                                       context,
-                                      '+',
+                                      PopIcons.plus,
+                                      'Increase quantity',
                                       cart.unavailableIds.contains(
                                             line.product.id,
                                           )
@@ -277,15 +279,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           color: CustomerPalette.soft(context),
                           borderRadius: BorderRadius.circular(11),
                         ),
-                        child: const Center(
-                          child: Text(
-                            '₱',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
+                        child: const Icon(PopIcons.cash, size: 24),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -347,7 +341,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   Widget _quantityButton(
     BuildContext context,
-    String label,
+    IconData icon,
+    String tooltip,
     VoidCallback? action,
   ) => SizedBox(
     width: 36,
@@ -360,7 +355,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         foregroundColor: CustomerPalette.ink(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
       ),
-      child: Text(label, style: const TextStyle(fontSize: 19)),
+      child: Icon(icon, size: 18, semanticLabel: tooltip),
     ),
   );
 

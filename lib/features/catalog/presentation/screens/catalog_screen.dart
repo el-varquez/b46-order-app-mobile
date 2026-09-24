@@ -149,9 +149,16 @@ class _CatalogScreenState extends State<CatalogScreen> {
                           ],
                         ),
                       ),
-                      const Text(
-                        'View cart  →',
-                        style: TextStyle(fontWeight: FontWeight.w800),
+                      const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'View cart',
+                            style: TextStyle(fontWeight: FontWeight.w800),
+                          ),
+                          SizedBox(width: 5),
+                          Icon(PopIcons.arrowRight, size: 16),
+                        ],
                       ),
                     ],
                   ),
@@ -483,13 +490,28 @@ class ProductCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(11),
                   ),
                 ),
-                child: Text(
-                  product.available ? '+ Add' : 'Sold out',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
+                child: product.available
+                    ? const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(PopIcons.plus, size: 14),
+                          SizedBox(width: 2),
+                          Text(
+                            'Add',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      )
+                    : const Text(
+                        'Sold out',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
               ),
             ),
           ],

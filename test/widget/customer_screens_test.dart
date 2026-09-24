@@ -16,6 +16,7 @@ import 'package:b46_order_app_mobile/features/customer_orders/domain/repositorie
 import 'package:b46_order_app_mobile/features/customer_orders/presentation/cubit/customer_orders_cubit.dart';
 import 'package:b46_order_app_mobile/features/customer_orders/presentation/screens/customer_orders_screen.dart';
 import 'package:b46_order_app_mobile/shared/components/customer_profile.dart';
+import 'package:b46_order_app_mobile/shared/components/pop_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -133,18 +134,18 @@ void main() {
       ),
     );
     await tester.pump();
-    await tester.ensureVisible(find.text('+ Add').first);
+    await tester.ensureVisible(find.text('Add').first);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('+ Add').first);
+    await tester.tap(find.text('Add').first);
     await tester.pump();
     expect(cart.state.itemCount, 1);
     expect(find.byKey(const Key('view-cart')), findsOneWidget);
     expect(find.byKey(const Key('add-to-basket-flight')), findsOneWidget);
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.byKey(const Key('add-to-basket-flight')), findsOneWidget);
-    await tester.ensureVisible(find.text('+ Add').first);
+    await tester.ensureVisible(find.text('Add').first);
     await tester.pump();
-    await tester.tap(find.text('+ Add').first);
+    await tester.tap(find.text('Add').first);
     await tester.pump();
     expect(cart.state.itemCount, 2);
     expect(find.byKey(const Key('add-to-basket-flight')), findsNWidgets(2));
@@ -178,6 +179,12 @@ void main() {
     await tester.pump();
     const row = ValueKey('basket-line-coke');
     expect(find.byTooltip('Remove'), findsNothing);
+    await tester.tap(find.byIcon(PopIcons.plus));
+    await tester.pump();
+    expect(cart.state.itemCount, 2);
+    await tester.tap(find.byIcon(PopIcons.minus));
+    await tester.pump();
+    expect(cart.state.itemCount, 1);
     await tester.drag(find.byKey(row), const Offset(260, 0));
     await tester.pumpAndSettle();
     expect(cart.state.lines, hasLength(1));

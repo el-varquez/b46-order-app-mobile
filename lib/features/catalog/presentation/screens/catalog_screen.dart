@@ -5,6 +5,7 @@ import '../../../../app/theme/tokens.dart';
 import '../../../../shared/components/customer_shell.dart';
 import '../../../../shared/components/pop_icons.dart';
 import '../../domain/entities/product.dart';
+import '../components/add_to_basket_flight.dart';
 import '../cubit/catalog_cubit.dart';
 
 class CatalogScreen extends StatefulWidget {
@@ -33,6 +34,8 @@ class CatalogScreen extends StatefulWidget {
 
 class _CatalogScreenState extends State<CatalogScreen> {
   final search = TextEditingController();
+  final basketButtonKey = GlobalKey();
+  final flights = <OverlayEntry>{};
   String category = 'All';
 
   @override
@@ -43,8 +46,53 @@ class _CatalogScreenState extends State<CatalogScreen> {
 
   void _refreshSearch() => setState(() {});
 
+  void _animateAdd(Product product, BuildContext cardContext) {
+    if (MediaQuery.of(context).disableAnimations) return;
+    final overlay = Overlay.of(context, rootOverlay: true);
+    final overlayBox = overlay.context.findRenderObject();
+    final cardBox = cardContext.findRenderObject();
+    final basketBox = basketButtonKey.currentContext?.findRenderObject();
+    if (overlayBox is! RenderBox ||
+        cardBox is! RenderBox ||
+        basketBox is! RenderBox) {
+      return;
+    }
+    final start = cardBox.localToGlobal(
+      Offset(cardBox.size.width / 2, cardBox.size.height * 0.35),
+      ancestor: overlayBox,
+    );
+    final end = basketBox.localToGlobal(
+      basketBox.size.center(Offset.zero),
+      ancestor: overlayBox,
+    );
+    late final OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (_) => Positioned.fill(
+        child: AddToBasketFlight(
+          key: const Key('add-to-basket-flight'),
+          start: start,
+          end: end,
+          itemIcon: _categoryIcon(product.categoryName),
+          imageUrl: product.imageUrl,
+          onFinished: () {
+            if (!flights.remove(entry)) return;
+            entry.remove();
+            entry.dispose();
+          },
+        ),
+      ),
+    );
+    flights.add(entry);
+    overlay.insert(entry);
+  }
+
   @override
   void dispose() {
+    for (final entry in flights) {
+      entry.remove();
+      entry.dispose();
+    }
+    flights.clear();
     search.removeListener(_refreshSearch);
     search.dispose();
     super.dispose();
@@ -58,6 +106,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
           title: widget.deliveryArea,
           subtitle: 'Delivering to',
           action: IconButton(
+            key: basketButtonKey,
             tooltip: 'Your basket',
             onPressed: widget.onCart,
             icon: const Icon(PopIcons.basket),
@@ -263,6 +312,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
                         itemBuilder: (context, index) => ProductCard(
                           product: visible[index],
                           onAdd: widget.onAdd,
+                          onAnimateAdd: _animateAdd,
                         ),
                       ),
                     ),
@@ -342,9 +392,15 @@ class _ShopHero extends StatelessWidget {
 }
 
 class ProductCard extends StatelessWidget {
-  const ProductCard({required this.product, required this.onAdd, super.key});
+  const ProductCard({
+    required this.product,
+    required this.onAdd,
+    this.onAnimateAdd,
+    super.key,
+  });
   final Product product;
   final ValueChanged<Product> onAdd;
+  final void Function(Product, BuildContext)? onAnimateAdd;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -415,7 +471,12 @@ class ProductCard extends StatelessWidget {
               width: product.available ? 60 : 68,
               height: 42,
               child: FilledButton(
-                onPressed: product.available ? () => onAdd(product) : null,
+                onPressed: product.available
+                    ? () {
+                        onAdd(product);
+                        onAnimateAdd?.call(product, context);
+                      }
+                    : null,
                 style: FilledButton.styleFrom(
                   padding: EdgeInsets.zero,
                   shape: RoundedRectangleBorder(
@@ -436,13 +497,13 @@ class ProductCard extends StatelessWidget {
       ],
     ),
   );
+}
 
-  IconData _categoryIcon(String category) {
-    final value = category.toLowerCase();
-    if (value.contains('drink')) return PopIcons.drink;
-    if (value.contains('pantry')) return PopIcons.pantry;
-    return PopIcons.groceries;
-  }
+IconData _categoryIcon(String category) {
+  final value = category.toLowerCase();
+  if (value.contains('drink')) return PopIcons.drink;
+  if (value.contains('pantry')) return PopIcons.pantry;
+  return PopIcons.groceries;
 }
 
 String _money(int centavos) => '₱${(centavos / 100).toStringAsFixed(2)}';

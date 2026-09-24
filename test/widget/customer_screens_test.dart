@@ -100,6 +100,61 @@ void main() {
     await cart.close();
   });
 
+  testWidgets('adding a product flies to the header basket', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final catalog = CatalogCubit(LoadProducts(_CatalogRepository()));
+    final cart = CartCubit(UpdateCart(MemoryCartRepository()));
+    await catalog.load();
+    await tester.pumpWidget(
+      MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: catalog),
+          BlocProvider.value(value: cart),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          home: BlocBuilder<CartCubit, CartState>(
+            builder: (context, state) => CatalogScreen(
+              cartCount: state.itemCount,
+              onAdd: (product) => cart.add(
+                CartProduct(
+                  id: product.id,
+                  name: product.name,
+                  unitPriceCentavos: product.priceCentavos,
+                ),
+              ),
+              onCart: () {},
+              onOrders: () {},
+              onSignOut: () {},
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.ensureVisible(find.text('+ Add').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('+ Add').first);
+    await tester.pump();
+    expect(cart.state.itemCount, 1);
+    expect(find.byKey(const Key('view-cart')), findsOneWidget);
+    expect(find.byKey(const Key('add-to-basket-flight')), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.byKey(const Key('add-to-basket-flight')), findsOneWidget);
+    await tester.ensureVisible(find.text('+ Add').first);
+    await tester.pump();
+    await tester.tap(find.text('+ Add').first);
+    await tester.pump();
+    expect(cart.state.itemCount, 2);
+    expect(find.byKey(const Key('add-to-basket-flight')), findsNWidgets(2));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('add-to-basket-flight')), findsNothing);
+    expect(tester.takeException(), isNull);
+    await catalog.close();
+    await cart.close();
+  });
+
   testWidgets('basket item removes only after a left swipe', (tester) async {
     await tester.binding.setSurfaceSize(const Size(320, 760));
     addTearDown(() => tester.binding.setSurfaceSize(null));

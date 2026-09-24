@@ -13,6 +13,7 @@ import '../../features/authentication/presentation/screens/registration_screens.
 import '../../features/authentication/presentation/screens/change_password_screen.dart';
 import '../../features/cart_checkout/domain/entities/cart.dart';
 import '../../features/cart_checkout/presentation/cubit/cart_cubit.dart';
+import '../../features/cart_checkout/presentation/screens/basket_screen.dart';
 import '../../features/cart_checkout/presentation/screens/checkout_screen.dart';
 import '../../features/cashier_fulfillment/presentation/screens/cashier_screens.dart';
 import '../../features/catalog/domain/entities/product.dart';
@@ -94,6 +95,11 @@ GoRouter createRouter(AppDependencies dependencies, VoidCallback toggleTheme) {
         builder: (_, _) => _ExitOnBack(
           child: _CustomerCatalogRoute(dependencies: dependencies),
         ),
+      ),
+      GoRoute(
+        path: '/basket',
+        builder: (context, _) =>
+            BasketScreen(onCheckout: () => context.push('/checkout')),
       ),
       GoRoute(
         path: '/checkout',
@@ -230,6 +236,7 @@ bool allowedForRole(UserRole role, String location) => switch (role) {
   UserRole.customer =>
     location == '/shop' ||
         location == '/profile' ||
+        location == '/basket' ||
         location == '/checkout' ||
         location.startsWith('/orders'),
   UserRole.cashier => location.startsWith('/staff/orders'),
@@ -295,7 +302,7 @@ class _CustomerCatalogRouteState extends State<_CustomerCatalogRoute> {
                 unitPriceCentavos: product.priceCentavos,
               ),
             ),
-            onCart: () => context.push('/checkout'),
+            onCart: () => context.push('/basket'),
             onOrders: () => context.push('/orders'),
             onProfile: () => context.push('/profile'),
             onSignOut: widget.dependencies.session.logout,

@@ -6,8 +6,10 @@ void main() {
   test('roles cannot navigate into another role area', () {
     expect(homeForRole(UserRole.customer), '/shop');
     expect(allowedForRole(UserRole.customer, '/profile'), isTrue);
+    expect(allowedForRole(UserRole.customer, '/basket'), isTrue);
     expect(allowedForRole(UserRole.customer, '/staff/orders'), isFalse);
     expect(allowedForRole(UserRole.cashier, '/profile'), isFalse);
+    expect(allowedForRole(UserRole.cashier, '/basket'), isFalse);
     expect(allowedForRole(UserRole.cashier, '/orders'), isFalse);
     expect(allowedForRole(UserRole.admin, '/shop'), isFalse);
     expect(allowedForRole(UserRole.cashier, '/staff/orders/123'), isTrue);

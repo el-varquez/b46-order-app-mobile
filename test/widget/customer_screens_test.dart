@@ -4,6 +4,7 @@ import 'package:b46_order_app_mobile/features/cart_checkout/application/use_case
 import 'package:b46_order_app_mobile/features/cart_checkout/data/repositories/memory_cart_repository.dart';
 import 'package:b46_order_app_mobile/features/cart_checkout/domain/entities/cart.dart';
 import 'package:b46_order_app_mobile/features/cart_checkout/presentation/cubit/cart_cubit.dart';
+import 'package:b46_order_app_mobile/features/cart_checkout/presentation/screens/basket_screen.dart';
 import 'package:b46_order_app_mobile/features/cart_checkout/presentation/screens/checkout_screen.dart';
 import 'package:b46_order_app_mobile/features/catalog/application/use_cases/load_products.dart';
 import 'package:b46_order_app_mobile/features/catalog/domain/entities/product.dart';
@@ -91,14 +92,91 @@ void main() {
           .text,
       'Block 8, Lot 2, Bria Homes',
     );
-    await tester.scrollUntilVisible(
-      find.byKey(const Key('place-order')),
-      200,
-      scrollable: find.byType(Scrollable).first,
-    );
+    expect(find.byKey(const Key('place-order')), findsOneWidget);
     expect(find.textContaining('Place order'), findsOneWidget);
     expect(tester.takeException(), isNull);
     await catalog.close();
+    await cart.close();
+  });
+
+  testWidgets('basket leads to delivery checkout with the same total', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(320, 760));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final cart = CartCubit(UpdateCart(MemoryCartRepository()));
+    cart.add(
+      const CartProduct(id: 'coke', name: 'Coke 1.5L', unitPriceCentavos: 8200),
+    );
+    String? placedAddress;
+    String? placedNotes;
+    await tester.pumpWidget(
+      BlocProvider.value(
+        value: cart,
+        child: MaterialApp(
+          theme: AppTheme.light,
+          home: Builder(
+            builder: (context) => BasketScreen(
+              onCheckout: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => CheckoutScreen(
+                    placing: false,
+                    message: null,
+                    initialAddress: 'Block 8, Bria Homes',
+                    onPlace: (address, notes) async {
+                      placedAddress = address;
+                      placedNotes = notes;
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    final basketFooter = find.byKey(const Key('basket-footer'));
+    expect(
+      find.descendant(of: basketFooter, matching: find.text('Items')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: basketFooter,
+        matching: find.text('Delivery inside Bria'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: basketFooter, matching: find.text('Total')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: basketFooter, matching: find.text('₱82.00')),
+      findsNWidgets(2),
+    );
+    expect(find.byKey(const Key('continue-to-checkout')), findsOneWidget);
+    expect(find.text('Delivery details'), findsNothing);
+
+    await tester.tap(find.byKey(const Key('continue-to-checkout')));
+    await tester.pumpAndSettle();
+    expect(find.text('Delivery details'), findsOneWidget);
+    final checkoutFooter = find.byKey(const Key('checkout-footer'));
+    expect(
+      find.descendant(of: checkoutFooter, matching: find.text('Amount due')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: checkoutFooter, matching: find.text('₱82.00')),
+      findsOneWidget,
+    );
+    expect(find.text('Place order · ₱82.00'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('place-order')));
+    await tester.pump();
+    expect(placedAddress, 'Block 8, Bria Homes');
+    expect(placedNotes, '');
+    expect(tester.takeException(), isNull);
     await cart.close();
   });
 
@@ -188,11 +266,7 @@ void main() {
         value: cart,
         child: MaterialApp(
           theme: AppTheme.light,
-          home: CheckoutScreen(
-            placing: false,
-            message: null,
-            onPlace: (_, _) async {},
-          ),
+          home: BasketScreen(onCheckout: () {}),
         ),
       ),
     );

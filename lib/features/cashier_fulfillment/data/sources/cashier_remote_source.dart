@@ -6,18 +6,30 @@ final class CashierRemoteSource {
   const CashierRemoteSource(this._api);
   final AuthenticatedApiClient _api;
 
-  Future<List<CashierOrder>> orders() async {
+  Future<CashierOrderPage> orders({
+    FulfillmentStatus? status,
+    String? afterId,
+  }) async {
     final response = await _api.request(
       'GET',
       '/v1/staff/orders',
-      query: {'limit': '100'},
+      query: {
+        'limit': '30',
+        if (status != null) 'status': status.name.toUpperCase(),
+        'after_id': ?afterId,
+      },
     );
     final data = response['data'] as Map<String, dynamic>;
-    return (data['orders'] as List<dynamic>)
+    final orders = (data['orders'] as List<dynamic>)
         .map(
           (value) => CashierOrderModel.fromJson(value as Map<String, dynamic>),
         )
         .toList(growable: false);
+    final next = data['next_after_id'] as String?;
+    return CashierOrderPage(
+      orders: orders,
+      nextAfterId: next == null || next.isEmpty ? null : next,
+    );
   }
 
   Future<CashierOrder> order(String id) async {

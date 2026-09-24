@@ -1,9 +1,20 @@
 enum FulfillmentStatus { preparing, delivering, delivered }
 
 final class CashierOrderLine {
-  const CashierOrderLine({required this.name, required this.quantity});
+  const CashierOrderLine({
+    required this.id,
+    required this.name,
+    required this.quantity,
+  });
+  final String id;
   final String name;
   final int quantity;
+}
+
+final class CashierOrderPage {
+  const CashierOrderPage({required this.orders, required this.nextAfterId});
+  final List<CashierOrder> orders;
+  final String? nextAfterId;
 }
 
 final class CashierOrder {

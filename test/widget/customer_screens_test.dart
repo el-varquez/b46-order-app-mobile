@@ -1,4 +1,5 @@
 import 'package:b46_order_app_mobile/app/theme/app_theme.dart';
+import 'package:b46_order_app_mobile/app/theme/tokens.dart';
 import 'package:b46_order_app_mobile/features/cart_checkout/application/use_cases/update_cart.dart';
 import 'package:b46_order_app_mobile/features/cart_checkout/data/repositories/memory_cart_repository.dart';
 import 'package:b46_order_app_mobile/features/cart_checkout/domain/entities/cart.dart';
@@ -14,6 +15,7 @@ import 'package:b46_order_app_mobile/features/customer_orders/domain/entities/cu
 import 'package:b46_order_app_mobile/features/customer_orders/domain/repositories/customer_order_repository.dart';
 import 'package:b46_order_app_mobile/features/customer_orders/presentation/cubit/customer_orders_cubit.dart';
 import 'package:b46_order_app_mobile/features/customer_orders/presentation/screens/customer_orders_screen.dart';
+import 'package:b46_order_app_mobile/shared/components/customer_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -36,6 +38,7 @@ void main() {
           theme: AppTheme.light,
           home: CatalogScreen(
             cartCount: 0,
+            deliveryArea: 'Block 8, Lot 2, Bria Homes',
             onAdd: (_) {},
             onCart: () => cartOpened = true,
             onOrders: () {},
@@ -45,6 +48,7 @@ void main() {
       ),
     );
     await tester.pump();
+    expect(find.text('Block 8, Lot 2, Bria Homes'), findsOneWidget);
     expect(find.text('Coke 1.5L'), findsOneWidget);
     await tester.tap(find.byTooltip('Your basket'));
     expect(cartOpened, isTrue);
@@ -69,6 +73,7 @@ void main() {
         child: MaterialApp(
           theme: AppTheme.light,
           home: CheckoutScreen(
+            initialAddress: 'Block 8, Lot 2, Bria Homes',
             placing: false,
             message: null,
             onPlace: (_, _) async {},
@@ -77,6 +82,13 @@ void main() {
       ),
     );
     await tester.pump();
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const Key('delivery-address')))
+          .controller!
+          .text,
+      'Block 8, Lot 2, Bria Homes',
+    );
     await tester.scrollUntilVisible(
       find.byKey(const Key('place-order')),
       200,
@@ -133,6 +145,78 @@ void main() {
     expect(tester.takeException(), isNull);
     await orders.close();
   });
+
+  testWidgets('profile edits delivery area', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(320, 760));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    var savedArea = 'Bria Homes';
+    Widget profile() => MaterialApp(
+      theme: AppTheme.light,
+      home: CustomerProfileScreen(
+        name: 'Juan',
+        email: 'juan@example.com',
+        deliveryArea: savedArea,
+        deliveryAreaLoading: false,
+        onSaveDeliveryArea: (value) async {
+          savedArea = value;
+          return true;
+        },
+        onShop: () {},
+        onOrders: () {},
+        onToggleTheme: () {},
+        onSignOut: () {},
+      ),
+    );
+    await tester.pumpWidget(profile());
+    await tester.tap(find.text('Edit delivery area'));
+    await tester.pump();
+    await tester.enterText(
+      find.byKey(const Key('delivery-area-input')),
+      'Block 8, Lot 2, Bria Homes',
+    );
+    await tester.tap(find.text('Save'));
+    await tester.pump();
+    expect(savedArea, 'Block 8, Lot 2, Bria Homes');
+    await tester.pumpWidget(profile());
+    expect(find.text('Block 8, Lot 2, Bria Homes'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('delivered order steps are green', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(320, 760));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final repository = _OrdersRepository(CustomerOrderStatus.delivered);
+    final orders = CustomerOrdersCubit(
+      place: PlaceCustomerOrder(repository),
+      loadOrder: LoadCustomerOrder(repository),
+      loadOrders: LoadCustomerOrders(repository),
+      ids: _Ids(),
+      pollInterval: const Duration(days: 1),
+    );
+    await orders.loadAll();
+    await tester.pumpWidget(
+      BlocProvider.value(
+        value: orders,
+        child: MaterialApp(
+          theme: AppTheme.light,
+          home: const CustomerOrderStatusScreen(orderId: 'order-1'),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(
+      tester.widget<Icon>(find.byKey(const Key('order-status-icon'))).color,
+      PopColors.success,
+    );
+    for (var index = 0; index < 3; index++) {
+      final circle = tester.widget<Container>(
+        find.byKey(Key('order-step-$index')),
+      );
+      expect((circle.decoration! as BoxDecoration).color, PopColors.success);
+    }
+    expect(tester.takeException(), isNull);
+    await orders.close();
+  });
 }
 
 final class _CatalogRepository implements CatalogRepository {
@@ -169,23 +253,26 @@ final class _CatalogRepository implements CatalogRepository {
 }
 
 final class _OrdersRepository implements CustomerOrderRepository {
-  final orderValue = CustomerOrder(
-    id: 'order-1',
-    checkoutId: 'checkout-1',
-    status: CustomerOrderStatus.preparing,
-    totalCentavos: 8200,
-    deliveryAddress: 'Block 12, Bria Homes',
-    lines: const [
-      CustomerOrderLine(
-        productId: 'coke',
-        productName: 'Coke 1.5L',
-        quantity: 1,
-        unitPriceCentavos: 8200,
-      ),
-    ],
-    unavailableProductIds: const [],
-    createdAt: DateTime.utc(2026),
-  );
+  _OrdersRepository([
+    CustomerOrderStatus status = CustomerOrderStatus.preparing,
+  ]) : orderValue = CustomerOrder(
+         id: 'order-1',
+         checkoutId: 'checkout-1',
+         status: status,
+         totalCentavos: 8200,
+         deliveryAddress: 'Block 12, Bria Homes',
+         lines: const [
+           CustomerOrderLine(
+             productId: 'coke',
+             productName: 'Coke 1.5L',
+             quantity: 1,
+             unitPriceCentavos: 8200,
+           ),
+         ],
+         unavailableProductIds: const [],
+         createdAt: DateTime.utc(2026),
+       );
+  final CustomerOrder orderValue;
 
   @override
   Future<CustomerOrder> order(String orderId) async => orderValue;

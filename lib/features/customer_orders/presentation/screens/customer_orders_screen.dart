@@ -118,7 +118,9 @@ class CustomerOrdersScreen extends StatelessWidget {
                                       ? PopColors.authDanger.withValues(
                                           alpha: 0.15,
                                         )
-                                      : CustomerPalette.soft(context),
+                                      : PopColors.success.withValues(
+                                          alpha: 0.14,
+                                        ),
                                   borderRadius: BorderRadius.circular(30),
                                 ),
                                 child: Text(
@@ -126,7 +128,7 @@ class CustomerOrdersScreen extends StatelessWidget {
                                   style: TextStyle(
                                     color: rejected
                                         ? PopColors.authDanger
-                                        : CustomerPalette.ink(context),
+                                        : PopColors.success,
                                     fontSize: 10,
                                     fontWeight: FontWeight.w800,
                                   ),
@@ -199,10 +201,11 @@ class CustomerOrderStatusScreen extends StatelessWidget {
                     ),
                     child: Icon(
                       _icon(order.status),
+                      key: const Key('order-status-icon'),
                       size: 43,
                       color: rejected
                           ? PopColors.authDanger
-                          : CustomerPalette.ink(context),
+                          : PopColors.success,
                     ),
                   ),
                 ),
@@ -326,19 +329,18 @@ class CustomerOrderStatusScreen extends StatelessWidget {
               Column(
                 children: [
                   Container(
+                    key: Key('order-step-$index'),
                     width: 22,
                     height: 22,
                     decoration: BoxDecoration(
                       color: index <= current
-                          ? (index == current
-                                ? PopColors.launchRed
-                                : PopColors.success)
+                          ? PopColors.success
                           : CustomerPalette.soft(context),
                       shape: BoxShape.circle,
                     ),
                     child: Center(
                       child: Text(
-                        index < current ? '✓' : '${index + 1}',
+                        index <= current ? '✓' : '${index + 1}',
                         style: TextStyle(
                           color: index <= current
                               ? PopColors.white
@@ -352,7 +354,9 @@ class CustomerOrderStatusScreen extends StatelessWidget {
                     Container(
                       width: 2,
                       height: 38,
-                      color: CustomerPalette.line(context),
+                      color: index < current
+                          ? PopColors.success
+                          : CustomerPalette.line(context),
                     ),
                 ],
               ),

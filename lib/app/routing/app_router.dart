@@ -22,6 +22,7 @@ import '../../features/customer_orders/presentation/cubit/customer_orders_cubit.
 import '../../features/customer_orders/presentation/screens/customer_orders_screen.dart';
 import '../../shared/components/pop_scaffold.dart';
 import '../../shared/components/customer_profile.dart';
+import '../delivery_area/delivery_area_cubit.dart';
 import '../bootstrap/dependencies.dart';
 
 GoRouter createRouter(AppDependencies dependencies, VoidCallback toggleTheme) {
@@ -102,13 +103,18 @@ GoRouter createRouter(AppDependencies dependencies, VoidCallback toggleTheme) {
         path: '/profile',
         builder: (context, _) {
           final user = dependencies.session.state.session!.user;
-          return CustomerProfileScreen(
-            name: user.name,
-            email: user.email,
-            onShop: () => context.go('/shop'),
-            onOrders: () => context.go('/orders'),
-            onToggleTheme: toggleTheme,
-            onSignOut: dependencies.session.logout,
+          return BlocBuilder<DeliveryAreaCubit, DeliveryAreaState>(
+            builder: (context, area) => CustomerProfileScreen(
+              name: user.name,
+              email: user.email,
+              deliveryArea: area.area,
+              deliveryAreaLoading: area.loading,
+              onSaveDeliveryArea: dependencies.deliveryArea.save,
+              onShop: () => context.go('/shop'),
+              onOrders: () => context.go('/orders'),
+              onToggleTheme: toggleTheme,
+              onSignOut: dependencies.session.logout,
+            ),
           );
         },
       ),
@@ -277,20 +283,24 @@ class _CustomerCatalogRouteState extends State<_CustomerCatalogRoute> {
 
   @override
   Widget build(BuildContext context) => BlocBuilder<CartCubit, CartState>(
-    builder: (context, cart) => CatalogScreen(
-      cartCount: cart.itemCount,
-      onAdd: (Product product) => context.read<CartCubit>().add(
-        CartProduct(
-          id: product.id,
-          name: product.name,
-          unitPriceCentavos: product.priceCentavos,
+    builder: (context, cart) =>
+        BlocBuilder<DeliveryAreaCubit, DeliveryAreaState>(
+          builder: (context, area) => CatalogScreen(
+            cartCount: cart.itemCount,
+            deliveryArea: area.area,
+            onAdd: (Product product) => context.read<CartCubit>().add(
+              CartProduct(
+                id: product.id,
+                name: product.name,
+                unitPriceCentavos: product.priceCentavos,
+              ),
+            ),
+            onCart: () => context.push('/checkout'),
+            onOrders: () => context.push('/orders'),
+            onProfile: () => context.push('/profile'),
+            onSignOut: widget.dependencies.session.logout,
+          ),
         ),
-      ),
-      onCart: () => context.push('/checkout'),
-      onOrders: () => context.push('/orders'),
-      onProfile: () => context.push('/profile'),
-      onSignOut: widget.dependencies.session.logout,
-    ),
   );
 }
 
@@ -301,6 +311,7 @@ class _CheckoutRoute extends StatelessWidget {
   Widget build(BuildContext context) =>
       BlocBuilder<CustomerOrdersCubit, CustomerOrdersState>(
         builder: (context, orderState) => CheckoutScreen(
+          initialAddress: context.read<DeliveryAreaCubit>().state.area,
           placing: orderState.status == CustomerOrdersStatus.placing,
           message: orderState.status == CustomerOrdersStatus.failure
               ? orderState.message

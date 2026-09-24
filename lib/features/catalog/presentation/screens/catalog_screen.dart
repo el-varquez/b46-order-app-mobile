@@ -14,6 +14,7 @@ class CatalogScreen extends StatefulWidget {
     required this.onCart,
     required this.onOrders,
     required this.onSignOut,
+    this.deliveryArea = 'Bria Homes',
     this.onProfile,
     super.key,
   });
@@ -23,6 +24,7 @@ class CatalogScreen extends StatefulWidget {
   final VoidCallback onCart;
   final VoidCallback onOrders;
   final VoidCallback onSignOut;
+  final String deliveryArea;
   final VoidCallback? onProfile;
 
   @override
@@ -53,8 +55,8 @@ class _CatalogScreenState extends State<CatalogScreen> {
     child: Builder(
       builder: (context) => Scaffold(
         appBar: CustomerHeader(
-          title: 'Bria Homes',
-          subtitle: 'Delivering around',
+          title: widget.deliveryArea,
+          subtitle: 'Delivering to',
           action: IconButton(
             tooltip: 'Your basket',
             onPressed: widget.onCart,

@@ -11,19 +11,21 @@ class CheckoutScreen extends StatefulWidget {
     required this.placing,
     required this.message,
     required this.onPlace,
+    this.initialAddress = 'Block 12, Bria Homes',
     super.key,
   });
 
   final bool placing;
   final String? message;
   final Future<void> Function(String address, String notes) onPlace;
+  final String initialAddress;
 
   @override
   State<CheckoutScreen> createState() => _CheckoutScreenState();
 }
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
-  final address = TextEditingController(text: 'Block 12, Bria Homes');
+  late final address = TextEditingController(text: widget.initialAddress);
   final notes = TextEditingController();
 
   @override

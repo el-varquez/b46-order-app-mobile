@@ -7,6 +7,9 @@ class CustomerProfileScreen extends StatelessWidget {
   const CustomerProfileScreen({
     required this.name,
     required this.email,
+    required this.deliveryArea,
+    required this.deliveryAreaLoading,
+    required this.onSaveDeliveryArea,
     required this.onShop,
     required this.onOrders,
     required this.onToggleTheme,
@@ -16,6 +19,9 @@ class CustomerProfileScreen extends StatelessWidget {
 
   final String name;
   final String email;
+  final String deliveryArea;
+  final bool deliveryAreaLoading;
+  final Future<bool> Function(String) onSaveDeliveryArea;
   final VoidCallback onShop;
   final VoidCallback onOrders;
   final VoidCallback onToggleTheme;
@@ -86,18 +92,10 @@ class CustomerProfileScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 25),
-            const CustomerCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Delivery area',
-                    style: TextStyle(fontWeight: FontWeight.w800),
-                  ),
-                  SizedBox(height: 6),
-                  Text('Bria Homes'),
-                ],
-              ),
+            _DeliveryAreaCard(
+              area: deliveryArea,
+              loading: deliveryAreaLoading,
+              onSave: onSaveDeliveryArea,
             ),
             const SizedBox(height: 10),
             CustomerCard(
@@ -133,6 +131,121 @@ class CustomerProfileScreen extends StatelessWidget {
           ],
         ),
       ),
+    ),
+  );
+}
+
+class _DeliveryAreaCard extends StatefulWidget {
+  const _DeliveryAreaCard({
+    required this.area,
+    required this.loading,
+    required this.onSave,
+  });
+
+  final String area;
+  final bool loading;
+  final Future<bool> Function(String) onSave;
+
+  @override
+  State<_DeliveryAreaCard> createState() => _DeliveryAreaCardState();
+}
+
+class _DeliveryAreaCardState extends State<_DeliveryAreaCard> {
+  late final controller = TextEditingController(text: widget.area);
+  bool editing = false;
+  bool saving = false;
+
+  @override
+  void didUpdateWidget(covariant _DeliveryAreaCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!editing && widget.area != oldWidget.area) {
+      controller.text = widget.area;
+    }
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final area = controller.text.trim();
+    if (area.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter your delivery area.')),
+      );
+      return;
+    }
+    setState(() => saving = true);
+    final saved = await widget.onSave(area);
+    if (!mounted) return;
+    setState(() {
+      saving = false;
+      if (saved) editing = false;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          saved ? 'Delivery area saved.' : 'Could not save your delivery area.',
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => CustomerCard(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text(
+          'Delivery area',
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 6),
+        if (editing) ...[
+          TextField(
+            key: const Key('delivery-area-input'),
+            controller: controller,
+            maxLength: 500,
+            maxLines: 2,
+            decoration: const InputDecoration(
+              hintText: 'Block and lot, Bria Homes',
+            ),
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: saving
+                      ? null
+                      : () => setState(() {
+                          controller.text = widget.area;
+                          editing = false;
+                        }),
+                  child: const Text('Cancel'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: FilledButton(
+                  onPressed: saving ? null : _save,
+                  child: Text(saving ? 'Saving…' : 'Save'),
+                ),
+              ),
+            ],
+          ),
+        ] else ...[
+          Text(widget.loading ? 'Loading…' : widget.area),
+          const SizedBox(height: 10),
+          OutlinedButton(
+            onPressed: widget.loading
+                ? null
+                : () => setState(() => editing = true),
+            child: const Text('Edit delivery area'),
+          ),
+        ],
+      ],
     ),
   );
 }

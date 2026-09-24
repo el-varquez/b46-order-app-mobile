@@ -3,6 +3,10 @@ import '../../core/networking/json_http_client.dart';
 import '../../core/networking/session_access.dart';
 import '../../core/storage/secure_key_value_store.dart';
 import '../../features/authentication/application/use_cases/session_use_cases.dart';
+import '../../features/admin_cashier_management/application/use_cases/admin_cashier_use_cases.dart';
+import '../../features/admin_cashier_management/data/repositories/admin_cashier_repository_impl.dart';
+import '../../features/admin_cashier_management/data/sources/admin_cashier_remote_source.dart';
+import '../../features/admin_cashier_management/presentation/cubit/admin_cashiers_cubit.dart';
 import '../../features/authentication/application/use_cases/registration_use_cases.dart';
 import '../../features/authentication/data/repositories/session_repository_impl.dart';
 import '../../features/authentication/data/sources/session_sources.dart';
@@ -37,6 +41,7 @@ final class AppDependencies {
     required this.cart,
     required this.customerOrders,
     required this.cashierOrders,
+    required this.adminCashiers,
     required this.cashierOrderDetails,
   });
 
@@ -61,12 +66,16 @@ final class AppDependencies {
       CustomerOrderRemoteSource(api),
     );
     final cashierRepository = CashierRepositoryImpl(CashierRemoteSource(api));
+    final adminRepository = AdminCashierRepositoryImpl(
+      AdminCashierRemoteSource(api),
+    );
     final cartRepository = MemoryCartRepository();
     final session = SessionCubit(
       restoreSession: RestoreSession(sessionRepository),
       passwordLogin: PasswordLogin(sessionRepository),
       oauthLogin: OAuthLogin(sessionRepository),
       signOut: SignOut(sessionRepository),
+      changePassword: ChangeOwnPassword(sessionRepository),
     );
     final registration = RegistrationCubit(
       begin: BeginRegistration(sessionRepository),
@@ -93,6 +102,15 @@ final class AppDependencies {
         LoadCashierOrders(cashierRepository),
         config.pollInterval,
       ),
+      adminCashiers: AdminCashiersCubit(
+        list: ListCashiers(adminRepository),
+        detail: LoadCashier(adminRepository),
+        beginRegistration: BeginCashierRegistration(adminRepository),
+        resendRegistration: ResendCashierRegistration(adminRepository),
+        verifyRegistration: VerifyCashierRegistration(adminRepository),
+        changeStatus: ChangeCashierStatus(adminRepository),
+        resetLogin: ResetCashierLogin(adminRepository),
+      ),
       cashierOrderDetails: () => CashierOrderDetailCubit(
         load: LoadCashierOrder(cashierRepository),
         markRead: MarkCashierOrderRead(cashierRepository),
@@ -109,6 +127,7 @@ final class AppDependencies {
   final CartCubit cart;
   final CustomerOrdersCubit customerOrders;
   final CashierOrdersCubit cashierOrders;
+  final AdminCashiersCubit adminCashiers;
   final CashierOrderDetailCubit Function() cashierOrderDetails;
 
   Future<void> close() async {
@@ -119,5 +138,6 @@ final class AppDependencies {
     await cart.close();
     await customerOrders.close();
     await cashierOrders.close();
+    await adminCashiers.close();
   }
 }

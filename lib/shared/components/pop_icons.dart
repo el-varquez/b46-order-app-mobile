@@ -22,4 +22,9 @@ abstract final class PopIcons {
   static const IconData delivering = LucideIcons.truck;
   static const IconData delivered = LucideIcons.circleCheck;
   static const IconData rejected = LucideIcons.packageX;
+  static const IconData users = LucideIcons.users;
+  static const IconData addUser = LucideIcons.userPlus;
+  static const IconData disableUser = LucideIcons.userRoundX;
+  static const IconData restoreUser = LucideIcons.userCheck;
+  static const IconData resetLogin = LucideIcons.keyRound;
 }

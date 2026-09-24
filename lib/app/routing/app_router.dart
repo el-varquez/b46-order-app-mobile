@@ -5,11 +5,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/admin_cashier_management/presentation/screens/admin_placeholder_screen.dart';
+import '../../features/admin_cashier_management/presentation/screens/admin_cashier_screens.dart';
 import '../../features/authentication/domain/entities/session.dart';
 import '../../features/authentication/presentation/cubit/session_cubit.dart';
 import '../../features/authentication/presentation/screens/login_screen.dart';
 import '../../features/authentication/presentation/screens/registration_screens.dart';
+import '../../features/authentication/presentation/screens/change_password_screen.dart';
 import '../../features/cart_checkout/domain/entities/cart.dart';
 import '../../features/cart_checkout/presentation/cubit/cart_cubit.dart';
 import '../../features/cart_checkout/presentation/screens/checkout_screen.dart';
@@ -38,8 +39,15 @@ GoRouter createRouter(AppDependencies dependencies, VoidCallback toggleTheme) {
         return loginArea ? null : '/login';
       }
       final role = session.session!.user.role;
+      if (session.session!.user.passwordChangeRequired) {
+        return location == '/change-password' ? null : '/change-password';
+      }
       final home = homeForRole(role);
-      if (location == '/splash' || loginArea) return home;
+      if (location == '/splash' ||
+          loginArea ||
+          location == '/change-password') {
+        return home;
+      }
       if (!allowedForRole(role, location)) return home;
       return null;
     },
@@ -75,6 +83,12 @@ GoRouter createRouter(AppDependencies dependencies, VoidCallback toggleTheme) {
         path: '/login/verify',
         builder: (context, _) =>
             VerifyEmailScreen(onChangeEmail: () => context.pop()),
+      ),
+      GoRoute(
+        path: '/change-password',
+        builder: (_, _) => _ExitOnBack(
+          child: ChangePasswordScreen(onSignOut: dependencies.session.logout),
+        ),
       ),
       GoRoute(
         path: '/shop',
@@ -118,9 +132,25 @@ GoRouter createRouter(AppDependencies dependencies, VoidCallback toggleTheme) {
       ),
       GoRoute(
         path: '/admin',
-        builder: (_, _) => _ExitOnBack(
-          child: AdminPlaceholderScreen(onSignOut: dependencies.session.logout),
+        builder: (context, _) => _ExitOnBack(
+          child: AdminCashiersScreen(
+            onAdd: () => context.push('/admin/new'),
+            onOpen: (id) => context.push('/admin/$id'),
+            onSignOut: dependencies.session.logout,
+          ),
         ),
+        routes: [
+          GoRoute(
+            path: 'new',
+            builder: (context, _) =>
+                AddCashierScreen(onCreated: (id) => context.go('/admin/$id')),
+          ),
+          GoRoute(
+            path: ':cashierId',
+            builder: (_, state) =>
+                CashierDetailScreen(id: state.pathParameters['cashierId']!),
+          ),
+        ],
       ),
     ],
   );
@@ -177,7 +207,7 @@ bool allowedForRole(UserRole role, String location) => switch (role) {
         location == '/checkout' ||
         location.startsWith('/orders'),
   UserRole.cashier => location.startsWith('/staff/orders'),
-  UserRole.admin => location == '/admin',
+  UserRole.admin => location == '/admin' || location.startsWith('/admin/'),
 };
 
 final class _CubitRefresh extends ChangeNotifier {

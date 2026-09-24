@@ -123,7 +123,8 @@ class CustomerHeader extends StatelessWidget implements PreferredSizeWidget {
             tooltip: 'Back',
             onPressed: () => Navigator.of(context).maybePop(),
             style: IconButton.styleFrom(
-              backgroundColor: CustomerPalette.soft(context),
+              backgroundColor: CustomerPalette.soft(context)
+                  .withValues(alpha: 0.42),
               fixedSize: const Size(46, 46),
             ),
             icon: const Icon(PopIcons.back),

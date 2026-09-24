@@ -11,6 +11,9 @@ abstract final class PopIcons {
   static const IconData signOut = LucideIcons.logOut;
   static const IconData orders = LucideIcons.receiptText;
   static const IconData basket = LucideIcons.shoppingBag;
+  static const IconData home = LucideIcons.house;
+  static const IconData profile = LucideIcons.circleUserRound;
+  static const IconData search = LucideIcons.search;
   static const IconData emptyShelf = LucideIcons.store;
   static const IconData drink = LucideIcons.cupSoda;
   static const IconData pantry = LucideIcons.cookingPot;

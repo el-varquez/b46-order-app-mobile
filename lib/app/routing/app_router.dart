@@ -168,18 +168,23 @@ GoRouter createRouter(AppDependencies dependencies, VoidCallback toggleTheme) {
             onAdd: () => context.push('/admin/new'),
             onOpen: (id) => context.push('/admin/$id'),
             onSignOut: dependencies.session.logout,
+            onToggleTheme: toggleTheme,
           ),
         ),
         routes: [
           GoRoute(
             path: 'new',
-            builder: (context, _) =>
-                AddCashierScreen(onCreated: (id) => context.go('/admin/$id')),
+            builder: (context, _) => AddCashierScreen(
+              onCreated: (id) => context.go('/admin/$id'),
+              onToggleTheme: toggleTheme,
+            ),
           ),
           GoRoute(
             path: ':cashierId',
-            builder: (_, state) =>
-                CashierDetailScreen(id: state.pathParameters['cashierId']!),
+            builder: (_, state) => CashierDetailScreen(
+              id: state.pathParameters['cashierId']!,
+              onToggleTheme: toggleTheme,
+            ),
           ),
         ],
       ),
